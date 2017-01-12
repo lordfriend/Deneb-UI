@@ -1,0 +1,45 @@
+{
+  "name": "ng-gallery",
+  "author": "Bob Yuan",
+  "version": "0.0.1",
+  "scripts": {
+    "server:dev": "webpack-dev-server --config webpack.config.js --progress --profile --watch --content-base .",
+    "start": "npm run server:dev",
+    "webpack-dev-server": "webpack-dev-server",
+    "webpack": "webpack"
+  },
+  "dependencies": {
+    "@angular/core": "^2.4.1",
+    "@angular/compiler": "^2.4.1",
+    "@angular/platform-browser": "^2.4.1",
+    "@angular/platform-browser-dynamic": "^2.4.1",
+    "rxjs": "^5.0.1",
+    "zone.js": "^0.7.2"
+  },
+  "devDependencies": {
+    "@types/node": "6.0.38",
+    "@types/webpack": "1.12.34",
+    "angular2-template-loader": "^0.6.0",
+    "awesome-typescript-loader": "^3.0.0-beta.17",
+    "exports-loader": "^0.6.3",
+    "expose-loader": "^0.7.1",
+    "file-loader": "^0.9.0",
+    "html-webpack-plugin": "^2.24.1",
+    "imports-loader": "^0.7.0",
+    "json-loader": "^0.5.4",
+    "node-sass": "^4.1.1",
+    "raw-loader": "^0.5.1",
+    "sass-loader": "^4.1.1",
+    "ts-helpers": "^1.1.2",
+    "tslint": "^4.2.0",
+    "tslint-loader": "^3.3.0",
+    "typescript": "^2.1.4",
+    "webpack": "^2.1.0-beta.27",
+    "webpack-dev-middleware": "^1.9.0",
+    "webpack-dev-server": "^2.1.0-beta.11"
+  },
+  "engines": {
+    "node": ">= 4.2.1",
+    "npm": ">= 3"
+  }
+}
