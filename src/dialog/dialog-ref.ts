@@ -1,3 +1,3 @@
-export class DialogRef {
+export class DialogRef<T> {
 
 }
