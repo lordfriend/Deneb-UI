@@ -1,7 +1,14 @@
 import {Optional, SkipSelf} from '@angular/core';
+import {Subject, Observable} from 'rxjs';
 
 export class OverlayContainer {
     protected _overlayContainer: HTMLElement;
+
+    private _onContainerClick: Subject<any> = new Subject();
+
+    containerClick(): Observable<any> {
+        return this._onContainerClick.asObservable();
+    }
 
     getContainerElement(): HTMLElement {
         if (!this._overlayContainer) {
@@ -16,6 +23,7 @@ export class OverlayContainer {
         this._overlayContainer.classList.add('ui');
         this._overlayContainer.classList.add('dimmer');
         document.body.appendChild(this._overlayContainer);
+        this._overlayContainer.addEventListener('click', () => {this._onContainerClick.next(null);});
     }
 }
 

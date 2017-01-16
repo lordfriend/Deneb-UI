@@ -3,12 +3,15 @@ import {
     ViewContainerRef, Injector
 } from '@angular/core';
 import {OverlayContainer} from './overlay-contianer';
+import {Subject} from 'rxjs';
 /**
  * OverlayRef is a reference to an overlay created by overlay service.
  */
 export class OverlayRef {
 
     private _disposeCallback: () => void;
+
+    private _containerClick: Subject<any> = new Subject();
 
     constructor(
         private _plate: HTMLElement,
