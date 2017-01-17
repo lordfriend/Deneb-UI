@@ -2,24 +2,19 @@ import {Injectable, Injector, Type} from '@angular/core';
 import {Overlay} from '../overlay/overlay';
 import {DialogRef} from './dialog-ref';
 import {OverlayRef} from '../overlay/overlay-ref';
+import {DialogContainer} from './dialog-container';
 
 @Injectable()
 export class UIDialog {
     constructor(
-        private _overlay: Overlay,
+        private _dialogContainer: DialogContainer,
         private _injector: Injector
     ) {}
 
     open<T>(component: Type<T>, config: DialogConfig): DialogRef<T> {
-        let overlay = this._overlay.create();
-        let dialogRef = this.createDialogContent(component, overlay, config);
     }
 
-    createDialogContent<T>(component: Type<T>, overlayRef: OverlayRef, config: DialogConfig): DialogRef {
-        let dialogRef = new DialogRef(overlayRef);
-        if(!config.stickyDialog) {
-
-        }
+    createDialogContent<T>(component: Type<T>, container: DialogContainer, config: DialogConfig): DialogRef {
 
     }
 }
