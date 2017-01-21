@@ -1,11 +1,16 @@
-import {Optional, SkipSelf} from '@angular/core';
+import {
+    Optional, SkipSelf, Injectable
+} from '@angular/core';
 import {Subject, Observable} from 'rxjs';
 
+@Injectable()
 export class DialogContainer {
     private _dialogContainer: HTMLElement;
 
     private _onContainerClick: Subject<any> = new Subject();
-    
+
+    private _attachedDialogCount = 0;
+
     getContainerElement(): HTMLElement {
         if (!this._dialogContainer) {
             this._createDimmerContainer();
@@ -13,8 +18,32 @@ export class DialogContainer {
         return this._dialogContainer;
     }
 
+    dialogAttached() {
+        this._attachedDialogCount++;
+        this._showContainer();
+    }
+
+    dialogDetached() {
+        if (!this._dialogContainer) {
+            return;
+        }
+        this._attachedDialogCount--;
+
+        if (this._attachedDialogCount <= 0) {
+            this._hideContainer();
+        }
+    }
+
     onContainerClick(): Observable<any> {
         return this._onContainerClick.asObservable();
+    }
+
+    private _showContainer() {
+        this._dialogContainer.classList.add('active');
+    }
+
+    private _hideContainer() {
+        this._dialogContainer.classList.remove('active');
     }
 
     private _createDimmerContainer(): void {
@@ -25,6 +54,8 @@ export class DialogContainer {
         document.body.appendChild(this._dialogContainer);
         this._dialogContainer.addEventListener('click', () => {this._onContainerClick.next(null);});
     }
+
+
 }
 
 
