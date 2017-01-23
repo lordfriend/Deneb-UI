@@ -1,6 +1,6 @@
 import {Injectable, Injector, Type, ComponentFactoryResolver, ApplicationRef} from '@angular/core';
 import {DialogRef} from './dialog-ref';
-import {DialogContainer} from './dialog-container';
+import {DialogContainer, DIALOG_CONTAINER} from './dialog-container';
 
 @Injectable()
 export class UIDialog {
@@ -16,8 +16,8 @@ export class UIDialog {
         return dialogRef;
     }
 
-    createDialogContent<T>(component: Type<T>, container: DialogContainer, config: DialogConfig): DialogRef {
-        let dialogRef = new DialogRef(container, this._componentFactoryResolver, this._appRef, config);
+    createDialogContent<T>(component: Type<T>, container: DialogContainer, config: DialogConfig): DialogRef<T> {
+        let dialogRef = new DialogRef<T>(container, this._componentFactoryResolver, this._appRef, config);
         let componentRef = dialogRef.attachComponent(component, this._injector);
         dialogRef.componentInstance = componentRef.instance;
         return dialogRef;
@@ -28,3 +28,8 @@ export class DialogConfig {
     // stickyDialog means it cannot be closed through click on the backdrop or press escape key.
     stickyDialog: boolean
 }
+
+export const DIALOG_PROVIDERS = [
+    UIDialog,
+    DIALOG_CONTAINER
+];

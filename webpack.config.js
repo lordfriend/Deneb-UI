@@ -7,13 +7,13 @@ var NormalModuleReplacementPlugin = require('webpack/lib/NormalModuleReplacement
 
 module.exports = {
     entry: {
-        main: './playground/main.ts'
+        main: './demo-app/main.ts'
     },
     resolve: {
         extensions: ['.ts', '.js'],
         modules: [
             helpers.root('src'),
-            helpers.root('playground'),
+            helpers.root('demo-app'),
             helpers.root('node_modules')
         ]
     },
@@ -70,7 +70,7 @@ module.exports = {
         //
         // See: https://github.com/ampedandwired/html-webpack-plugin
         new HtmlWebpackPlugin({
-            template: 'playground/index.html',
+            template: 'demo-app/index.html',
             title: 'test',
             chunksSortMode: 'dependency',
             inject: 'body'
