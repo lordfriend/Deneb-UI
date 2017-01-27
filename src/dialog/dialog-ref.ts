@@ -37,7 +37,6 @@ export class DialogRef<T> {
 
         if (this._config.stickyDialog) {
             this._container.onContainerClick().subscribe(() => {
-                this._container.dialogDetached();
                 this.close();
             });
         }
@@ -49,6 +48,8 @@ export class DialogRef<T> {
         this._disposeCallback();
         this._afterClosed.next(dialogResult);
         this._afterClosed.complete();
+
+        this._container.dialogDetached();
     }
 
     afterClosed(): Observable<any> {

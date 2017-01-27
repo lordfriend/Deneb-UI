@@ -1,6 +1,7 @@
 import {Injectable, Injector, Type, ComponentFactoryResolver, ApplicationRef} from '@angular/core';
 import {DialogRef} from './dialog-ref';
 import {DialogContainer, DIALOG_CONTAINER} from './dialog-container';
+import {DialogInjector} from './dialog-injector';
 
 @Injectable()
 export class UIDialog {
@@ -18,7 +19,8 @@ export class UIDialog {
 
     createDialogContent<T>(component: Type<T>, container: DialogContainer, config: DialogConfig): DialogRef<T> {
         let dialogRef = new DialogRef<T>(container, this._componentFactoryResolver, this._appRef, config);
-        let componentRef = dialogRef.attachComponent(component, this._injector);
+        let dialogInjector = new DialogInjector(dialogRef, this._injector);
+        let componentRef = dialogRef.attachComponent(component, dialogInjector);
         dialogRef.componentInstance = componentRef.instance;
         return dialogRef;
     }
