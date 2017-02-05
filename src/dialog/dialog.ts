@@ -28,7 +28,7 @@ export class UIDialog {
 
 export class DialogConfig {
     // stickyDialog means it cannot be closed through click on the backdrop or press escape key.
-    stickyDialog: boolean
+    stickyDialog: boolean;
 }
 
 export const DIALOG_PROVIDERS = [

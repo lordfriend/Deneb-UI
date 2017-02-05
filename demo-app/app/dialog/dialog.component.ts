@@ -11,4 +11,8 @@ export class Dialog {
     openDialog() {
         let dialogRef = this._uiDialog.open(ExampleDialog, {stickyDialog: false});
     }
+
+    openStickyDialog() {
+        let dialogRef = this._uiDialog.open(ExampleDialog, {stickyDialog: true});
+    }
 }

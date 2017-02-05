@@ -1,4 +1,4 @@
-import {Observable, Subject} from 'rxjs';
+import {Observable, Subject, Subscription} from 'rxjs';
 import {Type, Injector, ComponentRef, ComponentFactoryResolver, ApplicationRef, EmbeddedViewRef} from '@angular/core';
 import {DialogContainer} from './dialog-container';
 import {DialogConfig} from './dialog';
@@ -8,6 +8,8 @@ export class DialogRef<T> {
     componentInstance: T;
 
     private _afterClosed: Subject<any> = new Subject();
+
+    private _onContainerClickSubscription: Subscription;
 
     private _disposeCallback: () => void;
 
@@ -35,8 +37,8 @@ export class DialogRef<T> {
         containerElement.appendChild(this._getComponentRootNode(componentRef));
         this._container.dialogAttached();
 
-        if (this._config.stickyDialog) {
-            this._container.onContainerClick().subscribe(() => {
+        if (!this._config.stickyDialog) {
+            this._onContainerClickSubscription = this._container.onContainerClick().subscribe(() => {
                 this.close();
             });
         }
@@ -45,10 +47,12 @@ export class DialogRef<T> {
     }
 
     close(dialogResult?: any): void {
+        if (this._onContainerClickSubscription) {
+            this._onContainerClickSubscription.unsubscribe();
+        }
         this._disposeCallback();
         this._afterClosed.next(dialogResult);
         this._afterClosed.complete();
-
         this._container.dialogDetached();
     }
 
