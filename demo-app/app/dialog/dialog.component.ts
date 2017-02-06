@@ -1,6 +1,10 @@
 import {Component} from '@angular/core';
 import {UIDialog} from '../../../src';
 import {ExampleDialog} from './example-dialog/example-dialog';
+
+require('semantic-ui-less/definitions/modules/dimmer.less');
+require('semantic-ui-less/definitions/modules/modal.less');
+
 @Component({
     selector: 'dialog-demo',
     template: require('./dialog.html')

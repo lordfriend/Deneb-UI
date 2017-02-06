@@ -33,13 +33,18 @@ module.exports = {
                 test: /\.ts$/,
                 exclude: [/\.(spec|e2e)\.ts$/],
                 use: [
-                    "awesome-typescript-loader",
+                    'awesome-typescript-loader',
                     'angular2-template-loader'
                 ]
             },
             {
-                test: /\.scss/,
-                use: 'sass-loader'
+                test: /\.less$/,
+                use: [
+                    'style-loader',
+                    'css-loader',
+                    'semantic-ui-less-module-loader'
+                ],
+                include: [/[\/\\]node_modules[\/\\]semantic-ui-less[\/\\]/]
             },
             {
                 test: /\.html$/,
