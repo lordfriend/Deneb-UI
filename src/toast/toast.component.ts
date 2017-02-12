@@ -5,8 +5,6 @@ import {
 import {ToastRef} from './toast-ref';
 import {UIToastAnimation} from './toast-interface';
 
-console.log(require('!!raw-loader!less-loader!./toast.less'));
-
 @Component({
     selector: 'ui-toast',
     template: '<div class="toast-content ui black message">{{message}}</div>',

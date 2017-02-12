@@ -38,7 +38,6 @@ export class UIToast {
         //     console.log('reused', this._lastActiveToast);
         //     return this._lastActiveToast;
         // }
-        console.log('new component');
         let componentFactory = this._componentFactoryResolver.resolveComponentFactory(toastRef.componentType);
         let toastInject = new ToastInjector(toastRef, this._injector);
         return componentFactory.create(toastInject);
@@ -65,7 +64,6 @@ export class UIToast {
         let duration  = this._pendingToastDuration;
 
         this._appRef.attachView(this._currentActiveToast.hostView);
-        console.log('attached', this._currentActiveToast);
         document.body.appendChild(this._getComponentRootNode(this._currentActiveToast));
 
         this.timerId = setTimeout(() => {
@@ -79,7 +77,6 @@ export class UIToast {
             if (this._currentActiveToast.instance['animationEvent'] && this._currentActiveToast.instance['uiLeaveAnimationDone']) {
                 this._leaveAnimationSubscription = (this._currentActiveToast.instance as UIToastAnimation).animationEvent.subscribe(
                     () => {
-                        console.log('animation completed');
                         this._leaveAnimationSubscription.unsubscribe();
                         // if (this._lastActiveToast !== this._currentActiveToast && this._lastActiveToast) {
                         //     console.log('destroy lastActiveToast: ', this._lastActiveToast, this._currentActiveToast);
@@ -94,7 +91,6 @@ export class UIToast {
                     }
                 );
                 this._appRef.detachView(this._currentActiveToast.hostView);
-                console.log('detached', this._currentActiveToast);
             } else {
                 // if (this._lastActiveToast !== this._currentActiveToast && this._lastActiveToast) {
                 //     this._lastActiveToast.destroy();
