@@ -5,5 +5,6 @@ import {DialogRef} from '../../../../src/dialog/dialog-ref';
     template: require('./example-dialog.html')
 })
 export class ExampleDialog {
+
     constructor(public dialogRef: DialogRef<ExampleDialog>) {}
 }

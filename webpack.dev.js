@@ -47,6 +47,15 @@ module.exports = {
                 include: [/[\/\\]node_modules[\/\\]semantic-ui-less[\/\\]/]
             },
             {
+                test: /.less$/,
+                use: [
+                    'style-loader',
+                    'css-loader',
+                    'less-loader'
+                ],
+                exclude: /node_modules/
+            },
+            {
                 test: /\.html$/,
                 use: 'raw-loader',
                 exclude: [helpers.root('src/index.html')]
