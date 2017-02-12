@@ -1,7 +1,9 @@
 import {Component, OnInit} from '@angular/core';
-import {UIToast} from '../../../src/toast/toast';
+import {UIToast, LONG_TOAST} from '../../../src/toast/toast';
 import {ToastRef} from '../../../src/toast/toast-ref';
 import {UIToastComponent} from '../../../src/toast/toast.component';
+
+require('semantic-ui-less/definitions/collections/message.less');
 
 const dummy_text = [
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
@@ -46,6 +48,7 @@ export class ToastDemo implements OnInit {
 
     ngOnInit(): any {
         this._toastRef = this._uiToastService.makeText();
+        this._toastRef.duration = LONG_TOAST;
         return null;
     }
 }
