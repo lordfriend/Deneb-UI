@@ -9,6 +9,7 @@
     "webpack-dev-server": "webpack-dev-server",
     "webpack": "webpack"
   },
+  "main": "src/index.ts",
   "dependencies": {},
   "devDependencies": {
     "@angular/common": "2.4.1",
