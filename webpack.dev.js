@@ -49,11 +49,21 @@ module.exports = {
             {
                 test: /.less$/,
                 use: [
+                    'raw-loader',
+                    'less-loader'
+                ],
+                include: [/src[\/\\]/]
+            },
+            {
+                test: /.less$/,
+                use: [
                     'style-loader',
                     'css-loader',
                     'less-loader'
                 ],
-                exclude: /node_modules/
+                exclude: [
+                    /node_modules/,
+                    /src[\/\\]/]
             },
             {
                 test: /\.html$/,

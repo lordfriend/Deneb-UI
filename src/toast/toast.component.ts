@@ -24,7 +24,7 @@ import {UIToastAnimation} from './toast-interface';
         '[@fade]': '"in"',
         '(@fade.done)': 'uiLeaveAnimationDone($event)'
     },
-    styles: [require('!!raw-loader!less-loader!./toast.less')],
+    styleUrls: ['toast.less'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class UIToastComponent implements OnDestroy, UIToastAnimation {
