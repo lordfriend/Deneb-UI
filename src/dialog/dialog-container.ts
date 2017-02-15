@@ -59,7 +59,7 @@ export class DialogContainer {
 }
 
 
-function DialogContainerFactory(parentContainer: DialogContainer) {
+export function DialogContainerFactory(parentContainer: DialogContainer) {
     return parentContainer || new DialogContainer();
 }
 

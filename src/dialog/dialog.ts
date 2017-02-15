@@ -1,4 +1,6 @@
-import {Injectable, Injector, Type, ComponentFactoryResolver, ApplicationRef} from '@angular/core';
+// Optional is unused here but in order to emit declaration files, we need to import it.
+// https://github.com/Microsoft/TypeScript/issues/9944#issuecomment-244448079
+import {Injectable, Injector, Type, ComponentFactoryResolver, ApplicationRef, Optional} from '@angular/core';
 import {DialogRef} from './dialog-ref';
 import {DialogContainer, DIALOG_CONTAINER} from './dialog-container';
 import {DialogInjector} from './dialog-injector';

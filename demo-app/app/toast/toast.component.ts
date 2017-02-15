@@ -33,7 +33,7 @@ const dummy_text = [
 
 @Component({
     selector: 'toast-demo',
-    template: require('./toast.html'),
+    templateUrl: 'toast.html',
 })
 export class ToastDemo implements OnInit {
 

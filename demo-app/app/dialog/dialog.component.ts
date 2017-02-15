@@ -7,7 +7,7 @@ require('semantic-ui-less/definitions/modules/modal.less');
 
 @Component({
     selector: 'dialog-demo',
-    template: require('./dialog.html')
+    templateUrl: 'dialog.html'
 })
 export class Dialog {
     constructor(private _uiDialog: UIDialog) {}

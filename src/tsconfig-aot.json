@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "module": "commonjs",
+    "target": "es5",
+    "sourceMap": true,
+    "noEmitHelpers": true,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "strictNullChecks": false,
+    "inlineSources": true,
+    "stripInternal": false,
+    "baseUrl": "",
+    "rootDir": ".",
+    "outDir": "../dist",
+    "paths": {
+    },
+    "lib": [
+      "dom",
+      "es6",
+      "es2015"
+    ],
+    "typeRoots": [
+      "../node_modules/@types/!(node)"
+    ]
+  },
+  "exclude": [
+    "**/*.spec.ts"
+  ],
+  "awesomeTypescriptLoaderOptions": {
+    "forkChecker": true,
+    "useWebpackText": true
+  },
+  "angularCompilerOptions": {
+    "genDir": "../dist",
+    "skipTemplateCodegen": true,
+    "skipMetadataEmit": false
+  },
+  "compileOnSave": false,
+  "buildOnSave": false,
+  "atom": { "rewriteTsconfig": false }
+}
