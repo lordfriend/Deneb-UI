@@ -1,7 +1,7 @@
 {
-  "name": "Deneb-UI",
+  "name": "deneb-ui",
   "author": "Bob Yuan",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "scripts": {
     "server:dev": "webpack-dev-server --config webpack.dev.js --progress --profile --watch --content-base .",
     "start": "npm run server:dev",
