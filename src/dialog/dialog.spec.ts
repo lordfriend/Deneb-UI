@@ -1,7 +1,7 @@
 import {TestBed, async, inject} from '@angular/core/testing';
 import {UIDialog} from './dialog';
 import {Component, NgModule} from '@angular/core';
-import {DialogRef} from './dialog-ref';
+import {UIDialogRef} from './dialog-ref';
 import {UIDialogModule} from './index';
 import {DialogContainer} from './dialog-container';
 
@@ -35,7 +35,7 @@ describe('UIDialog', () => {
     template: '<div class="dialog-content"><button type="button" (click)="dialogRef.close()"></button></div>'
 })
 class ExampleDialog {
-    constructor(public dialogRef: DialogRef<ExampleDialog>) {}
+    constructor(public dialogRef: UIDialogRef<ExampleDialog>) {}
 }
 
 const TEST_DIRECTIVES = [

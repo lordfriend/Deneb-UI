@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {UIToast, LONG_TOAST} from '../../../src/toast/toast';
-import {ToastRef} from '../../../src/toast/toast-ref';
+import {UIToastRef} from '../../../src/toast/toast-ref';
 import {UIToastComponent} from '../../../src/toast/toast.component';
 
 require('semantic-ui-less/definitions/collections/message.less');
@@ -37,7 +37,7 @@ const dummy_text = [
 })
 export class ToastDemo implements OnInit {
 
-    private _toastRef: ToastRef<UIToastComponent>;
+    private _toastRef: UIToastRef<UIToastComponent>;
 
     constructor(private _uiToastService: UIToast) {}
 

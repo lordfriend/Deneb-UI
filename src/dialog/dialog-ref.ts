@@ -3,7 +3,7 @@ import {Type, Injector, ComponentRef, ComponentFactoryResolver, ApplicationRef, 
 import {DialogContainer} from './dialog-container';
 import {DialogConfig} from './dialog';
 
-export class DialogRef<T> {
+export class UIDialogRef<T> {
 
     componentInstance: T;
 

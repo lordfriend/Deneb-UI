@@ -2,7 +2,7 @@ import {
     Component, Input, trigger, state, style, transition, animate, ViewEncapsulation,
     OnDestroy, AnimationTransitionEvent, Output, EventEmitter
 } from '@angular/core';
-import {ToastRef} from './toast-ref';
+import {UIToastRef} from './toast-ref';
 import {UIToastAnimation} from './toast-interface';
 
 @Component({
@@ -33,7 +33,7 @@ export class UIToastComponent implements OnDestroy, UIToastAnimation {
     @Output()
     animationEvent = new EventEmitter<any>();
 
-    constructor(private _toastRef: ToastRef<UIToastComponent>) {}
+    constructor(private _toastRef: UIToastRef<UIToastComponent>) {}
 
     ngOnDestroy(): void {
         console.log('destroyed');

@@ -1,6 +1,6 @@
 import {SHORT_TOAST, UIToast} from './toast';
 import {Type} from '@angular/core';
-export class ToastRef<T> {
+export class UIToastRef<T> {
 
     duration = SHORT_TOAST;
 

@@ -2,7 +2,7 @@ import {
     Injectable, Injector, ApplicationRef, ComponentFactoryResolver, Type, ComponentRef,
     EmbeddedViewRef
 } from '@angular/core';
-import {ToastRef} from './toast-ref';
+import {UIToastRef} from './toast-ref';
 import {UIToastComponent} from './toast.component';
 import {ToastInjector} from './toast-injector';
 import {Subscription} from 'rxjs';
@@ -25,15 +25,15 @@ export class UIToast {
                 private _componentFactoryResolver: ComponentFactoryResolver) {
     }
 
-    make<T>(componentType?: Type<T>): ToastRef<T> {
-        return new ToastRef(this, componentType);
+    make<T>(componentType?: Type<T>): UIToastRef<T> {
+        return new UIToastRef(this, componentType);
     }
 
-    makeText(): ToastRef<UIToastComponent> {
+    makeText(): UIToastRef<UIToastComponent> {
         return this.make(UIToastComponent);
     }
 
-    createComponent<T>(toastRef: ToastRef<T>): ComponentRef<T> {
+    createComponent<T>(toastRef: UIToastRef<T>): ComponentRef<T> {
         // if (this._lastActiveToast && this._lastActiveToast.componentType === toastRef.componentType) {
         //     console.log('reused', this._lastActiveToast);
         //     return this._lastActiveToast;

@@ -6,12 +6,12 @@ import {
 import {UIToastModule} from './index';
 import {UIToastAnimation} from './toast-interface';
 import {UIToast} from './toast';
-import {ToastRef} from './toast-ref';
+import {UIToastRef} from './toast-ref';
 
 describe('UIToast', () => {
     let toast: UIToast;
     let appRef: ApplicationRef;
-    let toastRef: ToastRef<any>;
+    let toastRef: UIToastRef<any>;
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             imports: [UIToastModule, ToastTestModule]
