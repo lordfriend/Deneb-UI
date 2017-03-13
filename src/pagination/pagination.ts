@@ -11,7 +11,7 @@ interface PageNumber {
   selector: 'ui-pagination',
   template: `
     <div class="ui pagination menu">
-      <a class="item" *ngFor="let page of pageNumberList" [ngClass]="{disabled: page === '...', active: page === currentPage}" (click)="onClickPage(page)">
+      <a class="item" *ngFor="let page of pageNumberList" [ngClass]="{disabled: page.text === '...', active: page.active}" (click)="onClickPage(page)">
         {{page.text}}
       </a>
     </div>
@@ -58,6 +58,7 @@ export class UIPagination {
   @Input()
   set max(max: number) {
     this._max = max;
+    this.pageNumberList = this.updatePageNumberList();
   }
 
   onClickPage(page: PageNumber) {
@@ -84,46 +85,47 @@ export class UIPagination {
 
   private updatePageNumberList(): PageNumber[] {
     console.log('rebuild pages');
+    let maxSize = this._max;
+    let currentPage = this.currentPage;
     let totalPages = Math.ceil(this._total / this._countPerPage);
     let pages: PageNumber [] = [];
     let startPage = 1, endPage = totalPages;
-    if(totalPages > this._max) {
-      // Visible pages are paginated with maxSize
-      startPage = (Math.ceil(this._currentPageNumber / this._max) - 1) * this._max + 1;
-      // Adjust last page if limit is exceeded
-      endPage = Math.min(startPage + this._max - 1, totalPages);
+    let isMaxSized = maxSize < totalPages;
+
+
+    if (isMaxSized) {
+        startPage = Math.max(currentPage - Math.floor(maxSize / 2), 1);
+        endPage = startPage + maxSize - 1;
+
+        if (endPage > totalPages) {
+            endPage = totalPages;
+            startPage = endPage - maxSize + 1;
+        }
     }
-    for(let i = startPage; i <= endPage; i++) {
-      pages.push(this.makePage(i, i + '', i === this._currentPageNumber));
+    for (let number = startPage; number < endPage; number++) {
+        pages.push(this.makePage(number, number + '', number === currentPage));
     }
 
-    if(totalPages > this._max) {
-      if(startPage > 1) {
-        if(startPage > 3) {
-          let previousPageSet = this.makePage(startPage - 1, '...', false);
-          pages.unshift(previousPageSet);
+    if (isMaxSized && maxSize > 0) {
+        if (startPage > 1) {
+            if (startPage > 3) {
+                pages.unshift(this.makePage(startPage - 1, '...', false));
+            }
+            if (startPage === 3) {
+                pages.unshift(this.makePage(2, '2', false));
+            }
+            // add the first page
+            pages.unshift(this.makePage(1, '1', false));
         }
-        if(startPage === 3) {
-          let secondPageLink = this.makePage(2, '2', false);
-          pages.unshift(secondPageLink);
+        if (endPage < totalPages) {
+            if (endPage < totalPages -2) {
+                pages.push(this.makePage(endPage + 1, '...', false));
+            }
+            if (endPage === totalPages -2) {
+                pages.push(this.makePage(totalPages - 1, (totalPages - 1) + '', false));
+            }
+            pages.push(this.makePage(totalPages, totalPages + '', false));
         }
-
-        var firstPageLink = this.makePage(1, '1', false);
-        pages.unshift(firstPageLink);
-      }
-
-      if(endPage < totalPages) {
-        if(endPage < totalPages - 2) {
-          let nextPageSet = this.makePage(endPage + 1, '...', false);
-          pages.push(nextPageSet);
-        }
-        if(endPage === totalPages -2) {
-          let secondToLastPageLink = this.makePage(totalPages -1 , (totalPages -1) + '', false);
-          pages.push(secondToLastPageLink);
-        }
-        let lastPageList = this.makePage(totalPages, totalPages + '', false);
-        pages.push(lastPageList);
-      }
     }
     return pages;
   }
