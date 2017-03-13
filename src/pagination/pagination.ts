@@ -11,7 +11,7 @@ interface PageNumber {
   selector: 'ui-pagination',
   template: `
     <div class="ui pagination menu">
-      <a class="item" *ngFor="let page of pageNumberList" [ngClass]="{disabled: page.text === '...', active: page.active}" (click)="onClickPage(page)">
+      <a class="item" *ngFor="let page of pageNumberList" [ngClass]="{active: page.active}" (click)="onClickPage(page)">
         {{page.text}}
       </a>
     </div>
@@ -62,9 +62,6 @@ export class UIPagination {
   }
 
   onClickPage(page: PageNumber) {
-    if(page.text === '...') {
-      return;
-    }
     if(page.number !== this._currentPageNumber) {
       this.currentPage = page.number;
       this.pageChange.emit(page.number);
