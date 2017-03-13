@@ -8,6 +8,8 @@ Error.stackTraceLimit = Infinity;
 
 require('zone.js/dist/long-stack-trace-zone');
 
+require('semantic-ui-less/definitions/globals/reset.less');
+require('semantic-ui-less/definitions/globals/site.less');
 
 import {platformBrowserDynamic} from '@angular/platform-browser-dynamic';
 import {AppModule} from './app/app.module';
