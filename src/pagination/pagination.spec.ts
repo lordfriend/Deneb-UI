@@ -1,15 +1,38 @@
-import {async, TestBed} from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {UIPaginationModule} from './index';
-import {Component, NgModule, OnInit} from '@angular/core';
+import {Component, DebugElement, NgModule, OnInit} from '@angular/core';
+import {UIPagination} from './pagination';
+import {By} from '@angular/platform-browser';
+
+function getPaginationItemSize(el: HTMLElement) {
+    return el.querySelectorAll('.item').length;
+}
 
 describe('UIPagination', () => {
+    let comp: UIPagination;
+    let fixture: ComponentFixture<UIPagination>;
+    let de: DebugElement;
+    let el: HTMLElement;
+
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            imports: [UIPaginationModule, PaginationTestModule]
+            imports: [UIPaginationModule]
         });
 
-        TestBed.compileComponents();
+        fixture = TestBed.createComponent(UIPagination);
+        comp = fixture.componentInstance;
+        de = fixture.debugElement.query(By.css('.ui.pagination.menu'));
+        el = de.nativeElement;
     }));
+
+    it('should render a list of menu buttons', () => {
+        comp.currentPage = 1;
+        comp.total = 200;
+        comp.countPerPage = 10;
+        comp.max = 6;
+        fixture.detectChanges();
+        // expect(getPaginationItemSize(el)).toBe(comp.max);
+    })
 });
 
 @Component({
