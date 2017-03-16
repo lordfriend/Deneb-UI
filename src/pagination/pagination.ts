@@ -101,9 +101,12 @@ export class UIPagination {
                 }
             }
         } else {
-            let lp = currentPage;
-            let rp = currentPage + 1;
-            while (rp - lp <= maxSize) {
+            let lp = Math.max(currentPage - 1, startPage);
+            let rp = Math.min(currentPage + 1, endPage);
+            if (lp != currentPage && rp !== currentPage) {
+                pages.push(this.makePage(currentPage, currentPage + ''));
+            }
+            while (rp - lp < maxSize) {
                 if (lp > startPage) {
                     pages.unshift(this.makePage(lp, lp + ''));
                     lp--;

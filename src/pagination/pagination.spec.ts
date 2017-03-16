@@ -1,11 +1,15 @@
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {UIPaginationModule} from './index';
-import {Component, DebugElement, NgModule, OnInit} from '@angular/core';
+import {DebugElement} from '@angular/core';
 import {UIPagination} from './pagination';
 import {By} from '@angular/platform-browser';
 
-function getPaginationItemSize(el: HTMLElement) {
-    return el.querySelectorAll('.item').length;
+function itemToArray(el: HTMLElement): string[] {
+    let arr = [], allItems = el.querySelectorAll('.item');
+    for (let i = 0; i < allItems.length; i++) {
+        arr.push(allItems[i].textContent.trim());
+    }
+    return arr;
 }
 
 describe('UIPagination', () => {
@@ -29,50 +33,8 @@ describe('UIPagination', () => {
         comp.currentPage = 1;
         comp.total = 200;
         comp.countPerPage = 10;
-        comp.max = 6;
+        comp.max = 4;
         fixture.detectChanges();
-        // expect(getPaginationItemSize(el)).toBe(comp.max);
+        expect(itemToArray(el)).toEqual(['1', '2', '3', '4', '...', '20']);
     })
 });
-
-@Component({
-    selector: 'pagination-test',
-    template: `
-        <div class="test-container">
-            <ui-pagination
-                [currentPage]="currentPage"
-                [total]="total"
-                (pageChange)="onPageUpdate($event)"
-                [countPerPage]="countPerPage"
-                [max]="max"></ui-pagination>
-        </div>`
-})
-class PaginationTestComponent implements OnInit {
-    currentPage: number;
-    total: number;
-    countPerPage: number;
-    max: number;
-    ngOnInit(): void {
-        this.currentPage = 1;
-        this.total = 200;
-        this.countPerPage = 10;
-        this.max = 6;
-    }
-
-    onPageUpdate(page) {
-        console.log(page);
-    }
-}
-
-
-const TEST_DIRECTIVES = [PaginationTestComponent];
-
-@NgModule({
-    declarations: TEST_DIRECTIVES,
-    imports: [UIPaginationModule],
-    exports: TEST_DIRECTIVES,
-    entryComponents: [PaginationTestComponent]
-})
-class PaginationTestModule {
-
-}

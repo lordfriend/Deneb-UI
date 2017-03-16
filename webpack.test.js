@@ -59,8 +59,32 @@ module.exports = {
                 exclude: [/\.e2e\.ts$/]
             },
             {
-                test: /\.scss/,
-                use: 'sass-loader'
+                test: /\.less$/,
+                use: [
+                    'style-loader',
+                    'css-loader',
+                    'semantic-ui-less-module-loader'
+                ],
+                include: [/[\/\\]node_modules[\/\\]semantic-ui-less[\/\\]/]
+            },
+            {
+                test: /.less$/,
+                use: [
+                    'raw-loader',
+                    'less-loader'
+                ],
+                include: [/src[\/\\]/]
+            },
+            {
+                test: /.less$/,
+                use: [
+                    'style-loader',
+                    'css-loader',
+                    'less-loader'
+                ],
+                exclude: [
+                    /node_modules/,
+                    /src[\/\\]/]
             },
             {
                 test: /\.html$/,
