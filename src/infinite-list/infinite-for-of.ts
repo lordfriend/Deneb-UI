@@ -13,7 +13,7 @@ import {
     DefaultIterableDiffer,
     EmbeddedViewRef,
     CollectionChangeRecord,
-    OnInit
+    OnInit, ChangeDetectorRef
 } from '@angular/core';
 import {getTypeNameForDebugging} from '@angular/core/src/facade/lang';
 import {InfiniteList} from './infinite-list';
@@ -41,9 +41,9 @@ export class InfiniteRow {
 }
 
 @Directive({
-    selector: '[infiniteFor]'
+    selector: '[infiniteFor][infiniteForOf]'
 })
-export class infiniteForOf implements OnChanges, DoCheck, OnInit {
+export class InfiniteForOf implements OnChanges, DoCheck, OnInit {
 
     private _differ: IterableDiffer;
     private _trackByFn: TrackByFn;
@@ -83,8 +83,7 @@ export class infiniteForOf implements OnChanges, DoCheck, OnInit {
      */
     private _isInLayout: boolean = false;
 
-    private _firstItem: any;
-    private _itemCount: number;
+    private _collection: any[];
 
     @Input() infiniteForOf: any;
 
@@ -114,7 +113,7 @@ export class infiniteForOf implements OnChanges, DoCheck, OnInit {
     constructor(
         private _infiniteList: InfiniteList,
         private _differs: IterableDiffers,
-        private _changeDetectorRef,
+        private _changeDetectorRef: ChangeDetectorRef,
         private _template: TemplateRef<InfiniteRow>,
         private _viewContainerRef: ViewContainerRef) {
     }
@@ -144,23 +143,28 @@ export class infiniteForOf implements OnChanges, DoCheck, OnInit {
 
     private applyChanges(changes: DefaultIterableDiffer) {
         const insertTuples: RecordViewTuple[] = [];
+        if (!this._collection) {
+            this._collection = [];
+        }
 
         changes.forEachOperation((item: CollectionChangeRecord, adjustedPreviousIndex: number, currentIndex: number) => {
             if (item.previousIndex == null) {
                 // new item
-                if (!this._firstItem) {
-                    this._firstItem = item.item;
-                }
+                console.log('new item', item, adjustedPreviousIndex, currentIndex);
                 this._isMeasurementRequired = true;
+                this._collection[currentIndex] = item.item;
             } else if (currentIndex == null) {
                 // remove item
+                console.log('remove item', item, adjustedPreviousIndex, currentIndex);
                 this._isMeasurementRequired = true;
+                this._collection.splice(adjustedPreviousIndex, 1);
             } else {
                 // move item
+                console.log('move item', item, adjustedPreviousIndex, currentIndex);
+                this._collection.splice(currentIndex, 0, this._collection.splice(adjustedPreviousIndex, 1)[0]);
             }
         });
 
-        this._itemCount = changes.length;
         this.measure();
         this.layout();
     }
@@ -189,10 +193,14 @@ export class infiniteForOf implements OnChanges, DoCheck, OnInit {
     }
 
     private measureChild(): number {
-        if (!this._firstItem && !this._itemCount) {
+        if (!this._collection || this._collection.length === 0) {
             return;
         }
-        let view = this._viewContainerRef.createEmbeddedView(this._template, new InfiniteRow(this._firstItem, 0, this._itemCount), 0);
+        let view = this._viewContainerRef.createEmbeddedView(
+            this._template,
+            new InfiniteRow(this._collection[0], 0, this._collection.length),
+            0
+        );
         let childHeight = (<HTMLElement> view.rootNodes[0]).clientHeight;
         console.log(`childHeight: ${childHeight}`);
         view.destroy();
@@ -206,10 +214,10 @@ export class infiniteForOf implements OnChanges, DoCheck, OnInit {
         if (!this._rowHeight) {
             this._rowHeight = this.measureChild();
         }
-        if (!this._rowHeight && !this._itemCount) {
+        if (!this._collection || this._collection.length === 0) {
             return;
         }
-        this._infiniteList.holderHeight = this._rowHeight * this._itemCount;
+        this._infiniteList.holderHeight = this._rowHeight * this._collection.length;
     }
 
     private layout() {
