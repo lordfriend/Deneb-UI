@@ -62,14 +62,14 @@ export class InfiniteList implements AfterViewChecked, AfterViewInit, OnDestroy 
     ngAfterViewInit(): void {
         if (window) {
             this._subscription.add(Observable.fromEvent(window, 'resize')
-                .throttleTime(200)
+                .throttleTime(100)
                 .subscribe(() => {
                     this.measure();
                 }));
         }
         if (this.listContainer && this.listContainer.nativeElement) {
             this._subscription.add(Observable.fromEvent(this.listContainer.nativeElement, 'scroll')
-                .throttleTime(50)
+                // .throttleTime(50)
                 .map(() => {
                     return this.listContainer.nativeElement.scrollTop;
                 })
