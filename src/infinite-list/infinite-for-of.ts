@@ -13,11 +13,54 @@ import {
     DefaultIterableDiffer,
     EmbeddedViewRef,
     CollectionChangeRecord,
-    OnInit, ChangeDetectorRef
+    OnInit, ChangeDetectorRef, ViewRef, ApplicationRef
 } from '@angular/core';
 import {getTypeNameForDebugging} from '@angular/core/src/facade/lang';
 import {InfiniteList} from './infinite-list';
 
+export class Recycler {
+    private limit: number = 0;
+    private _scrapViews: Map<number, ViewRef> = new Map();
+
+    getView(position: number): ViewRef | null {
+        let view = this._scrapViews.get(position);
+        if (!view && this._scrapViews.size > 0) {
+            position = this._scrapViews.keys().next().value;
+            view = this._scrapViews.get(position);
+        }
+        if (view) {
+            this._scrapViews.delete(position);
+        }
+        return view || null;
+    }
+
+    recycleView(position: number, view: ViewRef) {
+        view.detach();
+        this._scrapViews.set(position, view);
+    }
+
+    /**
+     * scrap view count should not exceed the number of current attached views.
+     * @param limit
+     */
+    pruneScrapViews() {
+        if (this.limit <= 1) {
+            return;
+        }
+        let keyIterator = this._scrapViews.keys();
+        let key: number;
+        while(this._scrapViews.size > this.limit) {
+            key = keyIterator.next().value;
+            this._scrapViews.get(key).destroy();
+            this._scrapViews.delete(key);
+        }
+    }
+
+    setScrapViewsLimit(limit: number) {
+        this.limit = limit;
+        this.pruneScrapViews();
+    }
+}
 
 export class InfiniteRow {
     constructor(public $implicit: any, public index: number, public count: number) {
@@ -85,6 +128,8 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit {
 
     private _collection: any[];
 
+    private _recycler: Recycler = new Recycler();
+
     @Input() infiniteForOf: any;
 
     @Input()
@@ -142,7 +187,6 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit {
     }
 
     private applyChanges(changes: DefaultIterableDiffer) {
-        const insertTuples: RecordViewTuple[] = [];
         if (!this._collection) {
             this._collection = [];
         }
@@ -163,6 +207,10 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit {
                 console.log('move item', item, adjustedPreviousIndex, currentIndex);
                 this._collection.splice(currentIndex, 0, this._collection.splice(adjustedPreviousIndex, 1)[0]);
             }
+        });
+
+        changes.forEachIdentityChange((record: any) => {
+            this._collection[record.currentIndex] = record.item;
         });
 
         this.measure();
@@ -192,6 +240,10 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit {
         );
     }
 
+    /**
+     * we only measure the first child and use its height as every row height
+     * @returns {number} the first child clientHeight
+     */
     private measureChild(): number {
         if (!this._collection || this._collection.length === 0) {
             return;
@@ -208,31 +260,96 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit {
     }
 
     private measure() {
-        if (!this._isMeasurementRequired) {
+        if (!this._isMeasurementRequired || !this._collection || this._collection.length === 0) {
             return;
         }
         if (!this._rowHeight) {
             this._rowHeight = this.measureChild();
         }
-        if (!this._collection || this._collection.length === 0) {
-            return;
-        }
         this._infiniteList.holderHeight = this._rowHeight * this._collection.length;
+        // calculate a approximate number of which a view can contain
+        let limit = this._containerHeight / this._rowHeight + 2;
+        this._recycler.setScrapViewsLimit(limit);
+        this._isMeasurementRequired = false;
     }
 
     private layout() {
-        if (!this._invalidate) {
+        if (!this._invalidate || this._isInLayout) {
             return;
         }
-
+        this._isInLayout = true;
+        this.findPositionInRange();
+        for(let i = 0; i < this._viewContainerRef.length; i++) {
+            let child = <EmbeddedViewRef<InfiniteRow>> this._viewContainerRef.get(i);
+            if (child.context.index < this._firstItemPosition || child.context.index > this._lastItemPosition) {
+                this._viewContainerRef.detach(i);
+                this._recycler.recycleView(child.context.index, child);
+                i--;
+            }
+        }
+        this.insertViews();
+        this._recycler.pruneScrapViews();
+        this._invalidate = false;
     }
 
-    private perViewChange(view: EmbeddedViewRef<InfiniteRow>, record: CollectionChangeRecord) {
-        view.context.$implicit = record.item;
+    private insertViews() {
+        if (this._viewContainerRef.length > 0) {
+            let firstChild = <EmbeddedViewRef<InfiniteRow>> this._viewContainerRef.get(0);
+            let lastChild = <EmbeddedViewRef<InfiniteRow>> this._viewContainerRef.get(this._viewContainerRef.length - 1);
+            for(let i = firstChild.context.index - 1; i >= this._firstItemPosition; i--) {
+                let view = this.getView(i);
+                this.dispatchLayout(i, view, true);
+            }
+            for(let i = lastChild.context.index + 1; i <= this._lastItemPosition; i++) {
+                let view = this.getView(i);
+                this.dispatchLayout(i, view, false);
+            }
+        }  else {
+            for(let i = this._firstItemPosition; i <= this._lastItemPosition; i++) {
+                let view = this.getView(i);
+                this.dispatchLayout(i, view, false);
+            }
+        }
     }
-}
 
-class RecordViewTuple {
-    constructor(public record: any, public view: EmbeddedViewRef<InfiniteRow>) {
+    //noinspection JSMethodCanBeStatic
+    private applyStyles(viewElement: HTMLElement, y: number) {
+        viewElement.style.transform = `translateY(${y}px)`;
+        viewElement.style.webkitTransform = `translateY(${y})`;
+        viewElement.style.width = `${this._containerWidth}px`;
+        viewElement.style.height = `${this._rowHeight}px`;
+        viewElement.style.position = 'absolute';
+    }
+
+    private dispatchLayout(position: number, view: ViewRef, addBefore: boolean) {
+        let startPosY = position * this._rowHeight;
+        this.applyStyles((view as EmbeddedViewRef<InfiniteRow>).rootNodes[0], startPosY);
+
+        if (addBefore) {
+            this._viewContainerRef.insert(view, 0);
+        } else {
+            this._viewContainerRef.insert(view);
+        }
+    }
+
+    private findPositionInRange() {
+        let scrollY = this._scrollY;
+        let firstPosition = Math.floor(scrollY / this._rowHeight);
+        let firstPositionOffset = scrollY - firstPosition * this._rowHeight;
+        let lastPosition = Math.ceil((this._containerHeight + firstPositionOffset) / this._rowHeight) + firstPosition;
+        this._firstItemPosition = firstPosition;
+        this._lastItemPosition = Math.min(lastPosition, this._collection.length - 1);
+    }
+
+    private getView(position: number): ViewRef {
+        let view = this._recycler.getView(position);
+        let item = this._collection[position];
+        let count = this._collection.length;
+        if (!view) {
+            view = this._template.createEmbeddedView(new InfiniteRow(item, position, count));
+        } else {
+            (view as EmbeddedViewRef<InfiniteRow>).context.$implicit = this._collection[position];
+        }
+        return view;
     }
 }

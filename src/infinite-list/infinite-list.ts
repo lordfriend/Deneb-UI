@@ -62,7 +62,7 @@ export class InfiniteList implements AfterViewChecked, AfterViewInit, OnDestroy 
             this._subscription.add(Observable.fromEvent(this.listContainer.nativeElement, 'scroll')
                 .throttleTime(50)
                 .map(() => {
-                    return this.listContainer.nativeElement.scrollY;
+                    return this.listContainer.nativeElement.scrollTop;
                 })
                 .subscribe((scrollY) => {
                     this.scrollPosition.next(scrollY);
