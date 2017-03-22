@@ -5,7 +5,9 @@ import {BehaviorSubject, Observable, Subscription} from 'rxjs';
     selector: 'infinite-list',
     template: `
 <div class="infinite-list" #listContainer>
-    <div class="infinite-list-holder" #listHolder></div>
+    <div class="infinite-list-holder" [style.height]="holderHeightInPx">
+        <ng-content></ng-content>
+    </div>
 </div>`,
     styles: [`
         .infinite-list {
@@ -25,34 +27,36 @@ import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 })
 export class InfiniteList implements AfterViewChecked, AfterViewInit, OnDestroy {
 
-    private _holderHeight: number;
+    holderHeight: number;
     private _containerWidth: number;
     private _containerHeight: number;
 
     private _subscription: Subscription = new Subscription();
 
-    @ViewChild('listHolder') listHolder: ElementRef;
     @ViewChild('listContainer') listContainer: ElementRef;
 
     /**
      * current scroll position subject.
      * @type {number}
      */
-    scrollPosition: BehaviorSubject<number> = BehaviorSubject.create();
+    scrollPosition: BehaviorSubject<number> = new BehaviorSubject(0);
     /**
      * list container width and height.
      */
-    sizeChange: BehaviorSubject<number[]> = BehaviorSubject.create();
+    sizeChange: BehaviorSubject<number[]> = new BehaviorSubject([0, 0]);
 
-    set holderHeight(height: number) {
-        this._holderHeight = height;
-        if (this.listHolder && this.listHolder.nativeElement) {
-            this.listHolder.nativeElement.style.height = `${height}px`;
+    get holderHeightInPx(): string {
+        if (this.holderHeight) {
+            return this.holderHeight + 'px';
         }
+        return '100%';
     }
 
     ngAfterViewChecked(): void {
-        this.measure();
+        // must do this in next tick
+        setTimeout(() => {
+            this.measure();
+        });
     }
 
     ngAfterViewInit(): void {

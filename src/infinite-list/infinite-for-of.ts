@@ -13,10 +13,11 @@ import {
     DefaultIterableDiffer,
     EmbeddedViewRef,
     CollectionChangeRecord,
-    OnInit, ChangeDetectorRef, ViewRef, ApplicationRef
+    OnInit, ChangeDetectorRef, ViewRef, ApplicationRef, OnDestroy
 } from '@angular/core';
 import {getTypeNameForDebugging} from '@angular/core/src/facade/lang';
 import {InfiniteList} from './infinite-list';
+import {BehaviorSubject, Subscription} from 'rxjs';
 
 export class Recycler {
     private limit: number = 0;
@@ -49,7 +50,7 @@ export class Recycler {
         }
         let keyIterator = this._scrapViews.keys();
         let key: number;
-        while(this._scrapViews.size > this.limit) {
+        while (this._scrapViews.size > this.limit) {
             key = keyIterator.next().value;
             this._scrapViews.get(key).destroy();
             this._scrapViews.delete(key);
@@ -86,10 +87,14 @@ export class InfiniteRow {
 @Directive({
     selector: '[infiniteFor][infiniteForOf]'
 })
-export class InfiniteForOf implements OnChanges, DoCheck, OnInit {
+export class InfiniteForOf implements OnChanges, DoCheck, OnInit, OnDestroy {
 
     private _differ: IterableDiffer;
     private _trackByFn: TrackByFn;
+    private _subscription: Subscription = new Subscription();
+
+    private _layoutRequest: BehaviorSubject<any> = new BehaviorSubject(false);
+    private _measureRequest: BehaviorSubject<boolean> = new BehaviorSubject(false);
     /**
      * scroll offset of y-axis in pixel
      */
@@ -108,13 +113,7 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit {
     private _rowHeight: number;
 
     /**
-     * when this value is true, a measurement is required
-     * @type {boolean}
-     * @private
-     */
-    private _isMeasurementRequired: boolean = true;
-    /**
-     * when this value is true, a layout is required
+     * when this value is true, a full clean layout is required, every element must be reposition
      * @type {boolean}
      * @private
      */
@@ -155,12 +154,27 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit {
         }
     }
 
-    constructor(
-        private _infiniteList: InfiniteList,
-        private _differs: IterableDiffers,
-        private _changeDetectorRef: ChangeDetectorRef,
-        private _template: TemplateRef<InfiniteRow>,
-        private _viewContainerRef: ViewContainerRef) {
+    constructor(private _infiniteList: InfiniteList,
+                private _differs: IterableDiffers,
+                private _changeDetectorRef: ChangeDetectorRef,
+                private _template: TemplateRef<InfiniteRow>,
+                private _viewContainerRef: ViewContainerRef) {
+
+        this._subscription.add(this._layoutRequest
+            .withLatestFrom(this._measureRequest
+                .filter(() => {
+                    return !!this._rowHeight;
+                })
+                .map(() => {
+                    console.log('measure requested');
+                    this.measure();
+                    return true;
+                }))
+            .subscribe(
+                () => {
+                    this.layout();
+                }
+            ));
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -190,17 +204,18 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit {
         if (!this._collection) {
             this._collection = [];
         }
+        let isMeasurementRequired = false;
 
         changes.forEachOperation((item: CollectionChangeRecord, adjustedPreviousIndex: number, currentIndex: number) => {
             if (item.previousIndex == null) {
                 // new item
                 console.log('new item', item, adjustedPreviousIndex, currentIndex);
-                this._isMeasurementRequired = true;
+                isMeasurementRequired = true;
                 this._collection[currentIndex] = item.item;
             } else if (currentIndex == null) {
                 // remove item
                 console.log('remove item', item, adjustedPreviousIndex, currentIndex);
-                this._isMeasurementRequired = true;
+                isMeasurementRequired = true;
                 this._collection.splice(adjustedPreviousIndex, 1);
             } else {
                 // move item
@@ -213,38 +228,59 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit {
             this._collection[record.currentIndex] = record.item;
         });
 
-        this.measure();
-        this.layout();
+        if (isMeasurementRequired) {
+            this.requestMeasure(true);
+        }
+
+        this.requestLayout();
     }
 
     ngOnInit(): void {
-        this._infiniteList.scrollPosition.subscribe(
+        this._subscription.add(this._infiniteList.scrollPosition.subscribe(
             (position) => {
+                console.log('scrollChange: ', position);
                 this._scrollY = position;
-                this._invalidate = true;
-                this.layout();
+                this.requestLayout();
             }
-        );
-        this._infiniteList.sizeChange.subscribe(
+        ));
+        this._subscription.add(this._infiniteList.sizeChange.subscribe(
             ([width, height]) => {
+                console.log('sizeChange: ', width, height);
                 this._containerWidth = width;
                 this._containerHeight = height;
-                if (this._containerWidth !== width) {
-                    this._rowHeight = 0;
-                }
-                this._isMeasurementRequired = true;
-                this._invalidate = true;
-                this.measure();
-                this.layout();
+                this.requestMeasure(this._containerWidth !== width);
+                this.requestLayout();
             }
-        );
+        ));
+    }
+
+    ngOnDestroy(): void {
+        this._subscription.unsubscribe();
+    }
+
+    private requestMeasure(invalidateRowHeight: boolean) {
+        if (invalidateRowHeight) {
+            this._rowHeight = 0;
+        }
+        if (!this._rowHeight) {
+            this.measureChild();
+        } else {
+            console.log('child measured');
+            this._measureRequest.next(true);
+        }
+    }
+
+    private requestLayout() {
+        console.log('requestLayout');
+        this._invalidate = true;
+        this._layoutRequest.next(true);
     }
 
     /**
      * we only measure the first child and use its height as every row height
-     * @returns {number} the first child clientHeight
+     * This function is asynchronous
      */
-    private measureChild(): number {
+    private measureChild() {
         if (!this._collection || this._collection.length === 0) {
             return;
         }
@@ -253,36 +289,39 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit {
             new InfiniteRow(this._collection[0], 0, this._collection.length),
             0
         );
-        let childHeight = (<HTMLElement> view.rootNodes[0]).clientHeight;
-        console.log((<HTMLElement> view.rootNodes[0]));
-        console.log(`childHeight: ${childHeight}`);
-        view.destroy();
-        return childHeight;
+        view.detectChanges();
+        // (view.rootNodes[0] as HTMLElement).style.opacity = '0.1';
+        setTimeout(() => {
+            console.log((<HTMLElement> view.rootNodes[0]));
+            this._rowHeight = (<HTMLElement> view.rootNodes[0]).clientHeight;
+            view.destroy();
+            console.log(`childHeight: ${this._rowHeight}`);
+            this._measureRequest.next(true);
+            this._invalidate = true;
+        });
     }
 
     private measure() {
-        if (!this._isMeasurementRequired || !this._collection || this._collection.length === 0) {
+        console.log('on measure');
+        if (!this._collection || this._collection.length === 0) {
             return;
-        }
-        if (!this._rowHeight) {
-            this._rowHeight = this.measureChild();
         }
         this._infiniteList.holderHeight = this._rowHeight * this._collection.length;
         // calculate a approximate number of which a view can contain
         let limit = this._containerHeight / this._rowHeight + 2;
         this._recycler.setScrapViewsLimit(limit);
-        this._isMeasurementRequired = false;
     }
 
     private layout() {
-        if (!this._invalidate || this._isInLayout) {
+        console.log('on layout');
+        if (this._isInLayout || !this._collection || this._collection.length === 0 || !this._containerHeight) {
             return;
         }
         this._isInLayout = true;
         this.findPositionInRange();
-        for(let i = 0; i < this._viewContainerRef.length; i++) {
+        for (let i = 0; i < this._viewContainerRef.length; i++) {
             let child = <EmbeddedViewRef<InfiniteRow>> this._viewContainerRef.get(i);
-            if (child.context.index < this._firstItemPosition || child.context.index > this._lastItemPosition) {
+            if (child.context.index < this._firstItemPosition || child.context.index > this._lastItemPosition || this._invalidate) {
                 this._viewContainerRef.detach(i);
                 this._recycler.recycleView(child.context.index, child);
                 i--;
@@ -290,6 +329,7 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit {
         }
         this.insertViews();
         this._recycler.pruneScrapViews();
+        this._isInLayout = false;
         this._invalidate = false;
     }
 
@@ -297,16 +337,16 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit {
         if (this._viewContainerRef.length > 0) {
             let firstChild = <EmbeddedViewRef<InfiniteRow>> this._viewContainerRef.get(0);
             let lastChild = <EmbeddedViewRef<InfiniteRow>> this._viewContainerRef.get(this._viewContainerRef.length - 1);
-            for(let i = firstChild.context.index - 1; i >= this._firstItemPosition; i--) {
+            for (let i = firstChild.context.index - 1; i >= this._firstItemPosition; i--) {
                 let view = this.getView(i);
                 this.dispatchLayout(i, view, true);
             }
-            for(let i = lastChild.context.index + 1; i <= this._lastItemPosition; i++) {
+            for (let i = lastChild.context.index + 1; i <= this._lastItemPosition; i++) {
                 let view = this.getView(i);
                 this.dispatchLayout(i, view, false);
             }
-        }  else {
-            for(let i = this._firstItemPosition; i <= this._lastItemPosition; i++) {
+        } else {
+            for (let i = this._firstItemPosition; i <= this._lastItemPosition; i++) {
                 let view = this.getView(i);
                 this.dispatchLayout(i, view, false);
             }
