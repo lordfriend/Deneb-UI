@@ -1,7 +1,14 @@
 import {Component, OnInit} from '@angular/core';
 @Component({
     selector: 'infinite-list-demo',
-    templateUrl: './infinite-list.html'
+    templateUrl: './infinite-list.html',
+    styles: [`
+        infinite-list {
+            width: 300px;
+            height: 300px;
+            display: block;
+        }
+    `]
 })
 export class InfiniteListDemo implements OnInit {
     collection: any[];

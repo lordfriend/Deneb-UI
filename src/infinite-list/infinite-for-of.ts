@@ -254,6 +254,7 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit {
             0
         );
         let childHeight = (<HTMLElement> view.rootNodes[0]).clientHeight;
+        console.log((<HTMLElement> view.rootNodes[0]));
         console.log(`childHeight: ${childHeight}`);
         view.destroy();
         return childHeight;

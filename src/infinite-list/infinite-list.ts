@@ -11,10 +11,15 @@ import {BehaviorSubject, Observable, Subscription} from 'rxjs';
         .infinite-list {
             overflow-x: hidden;
             overflow-y: scroll;
+            width: 100%;
+            height: 100%;
+            position: relative;
         }
         .infinite-list-holder {
             overflow-x: hidden;
             overflow-y: visible;
+            width: 100%;
+            position: absolute;
         }
     `]
 })
