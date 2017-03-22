@@ -328,7 +328,7 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit, OnDestroy {
             }
         }
         this.insertViews();
-        this._changeDetectorRef.detectChanges();
+        // this._changeDetectorRef.detectChanges();
         this._recycler.pruneScrapViews();
         this._isInLayout = false;
         this._invalidate = false;
