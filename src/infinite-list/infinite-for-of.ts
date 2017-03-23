@@ -13,7 +13,7 @@ import {
     DefaultIterableDiffer,
     EmbeddedViewRef,
     CollectionChangeRecord,
-    OnInit, ChangeDetectorRef, ViewRef, ApplicationRef, OnDestroy
+    OnInit, ChangeDetectorRef, ViewRef, OnDestroy
 } from '@angular/core';
 import {getTypeNameForDebugging} from '@angular/core/src/facade/lang';
 import {InfiniteList} from './infinite-list';
