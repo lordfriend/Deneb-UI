@@ -95,7 +95,7 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit, OnDestroy {
     /**
      * scroll offset of y-axis in pixel
      */
-    private _scrollY: number;
+    private _scrollY: number = 0;
     /**
      * first visible item index in collection
      */
@@ -107,7 +107,6 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit, OnDestroy {
 
     private _containerWidth: number;
     private _containerHeight: number;
-    private _rowHeight: number;
 
     /**
      * when this value is true, a full clean layout is required, every element must be reposition
@@ -214,7 +213,7 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit, OnDestroy {
         });
 
         if (isMeasurementRequired) {
-            this.requestMeasure(false);
+            this.requestMeasure();
         }
 
         this.requestLayout();
@@ -223,7 +222,7 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit, OnDestroy {
     ngOnInit(): void {
         this._subscription.add(this._infiniteList.scrollPosition
             .filter((scrollY) => {
-                return !this._rowHeight || Math.abs(scrollY - this._scrollY) >= this._rowHeight;
+                return Math.abs(scrollY - this._scrollY) >= this._infiniteList.rowHeight;
             })
             .subscribe(
                 (scrollY) => {
@@ -236,7 +235,7 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit, OnDestroy {
                 console.log('sizeChange: ', width, height);
                 this._containerWidth = width;
                 this._containerHeight = height;
-                this.requestMeasure(this._containerWidth !== width);
+                this.requestMeasure();
             }
         ));
     }
@@ -245,53 +244,22 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit, OnDestroy {
         this._subscription.unsubscribe();
     }
 
-    private requestMeasure(invalidateRowHeight: boolean) {
+    private requestMeasure() {
         if (this._isInMeasure || this._isInLayout) {
             clearTimeout(this._pendingMeasurement);
             this._pendingMeasurement = window.setTimeout(() => {
-                this.requestMeasure(invalidateRowHeight);
+                this.requestMeasure();
             }, 10);
             return;
         }
-        if (invalidateRowHeight) {
-            this._rowHeight = 0;
-        }
-        if (!this._rowHeight) {
-            this.measureChild();
-        } else {
-            this.measure();
-        }
+        this.measure();
     }
 
     private requestLayout() {
         console.log('requestLayout');
-        if (!this._isInMeasure) {
+        if (!this._isInMeasure && this._infiniteList.rowHeight) {
             this.layout();
         }
-    }
-
-    /**
-     * we only measure the first child and use its height as every row height
-     * This function is asynchronous
-     */
-    private measureChild() {
-        if (!this._collection || this._collection.length === 0) {
-            return;
-        }
-        this._isInMeasure = true;
-        let view = this._viewContainerRef.createEmbeddedView(
-            this._template,
-            new InfiniteRow(this._collection[0], 0, this._collection.length),
-            0
-        );
-        view.detectChanges();
-        // (view.rootNodes[0] as HTMLElement).style.opacity = '0.1';
-        setTimeout(() => {
-            this._rowHeight = (<HTMLElement> view.rootNodes[0]).clientHeight;
-            view.destroy();
-            console.log(`childHeight: ${this._rowHeight}`);
-            this.measure();
-        });
     }
 
     private measure() {
@@ -299,7 +267,7 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit, OnDestroy {
             return;
         }
         this._isInMeasure = true;
-        this._infiniteList.holderHeight = this._rowHeight * this._collection.length;
+        this._infiniteList.holderHeight = this._infiniteList.rowHeight * this._collection.length;
         // calculate a approximate number of which a view can contain
         this.calculateScrapViewsLimit();
         this._isInMeasure = false;
@@ -333,7 +301,7 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit, OnDestroy {
     }
 
     private calculateScrapViewsLimit() {
-        let limit = this._containerHeight / this._rowHeight + 2;
+        let limit = this._containerHeight / this._infiniteList.rowHeight + 2;
         this._recycler.setScrapViewsLimit(limit);
     }
 
@@ -359,17 +327,16 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit, OnDestroy {
 
     //noinspection JSMethodCanBeStatic
     private applyStyles(viewElement: HTMLElement, y: number) {
-        viewElement.style.transform = `translateY(${y}px) translateZ(0)`;
-        viewElement.style.webkitTransform = `translateY(${y})`;
+        viewElement.style.transform = `translate3d(0, ${y}px, 0)`;
+        viewElement.style.webkitTransform = `translate3d(0, ${y}px, 0)`;
         viewElement.style.width = `${this._containerWidth}px`;
-        viewElement.style.height = `${this._rowHeight}px`;
+        viewElement.style.height = `${this._infiniteList.rowHeight}px`;
         viewElement.style.position = 'absolute';
     }
 
     private dispatchLayout(position: number, view: ViewRef, addBefore: boolean) {
-        let startPosY = position * this._rowHeight;
+        let startPosY = position * this._infiniteList.rowHeight;
         this.applyStyles((view as EmbeddedViewRef<InfiniteRow>).rootNodes[0], startPosY);
-
         if (addBefore) {
             this._viewContainerRef.insert(view, 0);
         } else {
@@ -379,9 +346,9 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit, OnDestroy {
 
     private findPositionInRange() {
         let scrollY = this._scrollY;
-        let firstPosition = Math.floor(scrollY / this._rowHeight);
-        let firstPositionOffset = scrollY - firstPosition * this._rowHeight;
-        let lastPosition = Math.ceil((this._containerHeight + firstPositionOffset) / this._rowHeight) + firstPosition;
+        let firstPosition = Math.floor(scrollY / this._infiniteList.rowHeight);
+        let firstPositionOffset = scrollY - firstPosition * this._infiniteList.rowHeight;
+        let lastPosition = Math.ceil((this._containerHeight + firstPositionOffset) / this._infiniteList.rowHeight) + firstPosition;
         this._firstItemPosition = Math.max(firstPosition - 1, 0);
         this._lastItemPosition = Math.min(lastPosition + 1, this._collection.length - 1);
     }

@@ -1,4 +1,4 @@
-import {Component, ViewChild, ElementRef, AfterViewInit, OnDestroy} from '@angular/core';
+import {Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, Input} from '@angular/core';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 
 @Component({
@@ -60,6 +60,8 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
         return '100%';
     }
 
+    @Input() rowHeight: number;
+
     ngAfterViewInit(): void {
         if (window) {
             this._subscription.add(Observable.fromEvent(window, 'resize')
@@ -75,9 +77,10 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
             .subscribe((scrollY) => {
                 this.scrollPosition.next(scrollY);
             }));
-
-        let {width, height} = this.measure();
-        this.sizeChange.next([width, height]);
+        setTimeout(() => {
+            let {width, height} = this.measure();
+            this.sizeChange.next([width, height]);
+        });
     }
 
     ngOnDestroy(): void {
