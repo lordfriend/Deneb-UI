@@ -145,7 +145,7 @@ module.exports = {
     // See: https://webpack.github.io/docs/webpack-dev-server.html
     devServer: {
         port: 3000,
-        host: 'localhost',
+        host: '0.0.0.0',
         historyApiFallback: true,
         watchOptions: {
             aggregateTimeout: 300,

@@ -1,33 +1,31 @@
-import {Component, ViewChild, ElementRef, AfterViewChecked, AfterViewInit, OnDestroy} from '@angular/core';
+import {Component, ViewChild, ElementRef, AfterViewInit, OnDestroy} from '@angular/core';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 
 @Component({
     selector: 'infinite-list',
     template: `
-<div class="infinite-list" #listContainer>
-    <div class="infinite-list-holder" [style.height]="holderHeightInPx">
-        <ng-content></ng-content>
-    </div>
-</div>`,
+        <div class="infinite-list" #listContainer>
+            <div class="infinite-list-holder" [style.height]="holderHeightInPx">
+                <ng-content></ng-content>
+            </div>
+        </div>`,
     styles: [`
         .infinite-list {
+            overflow-y: auto;
             overflow-x: hidden;
-            overflow-y: scroll;
             width: 100%;
             height: 100%;
             position: relative;
         }
+
         .infinite-list-holder {
-            overflow-x: hidden;
-            overflow-y: visible;
             width: 100%;
-            position: absolute;
+            position: relative;
         }
     `]
 })
-export class InfiniteList implements AfterViewChecked, AfterViewInit, OnDestroy {
-
-    holderHeight: number;
+export class InfiniteList implements AfterViewInit, OnDestroy {
+    private _holderHeight: number;
     private _containerWidth: number;
     private _containerHeight: number;
 
@@ -45,6 +43,16 @@ export class InfiniteList implements AfterViewChecked, AfterViewInit, OnDestroy 
      */
     sizeChange: BehaviorSubject<number[]> = new BehaviorSubject([0, 0]);
 
+    set holderHeight(height: number) {
+        if (height) {
+            this._holderHeight = height;
+        }
+    }
+
+    get holderHeight(): number {
+        return this._holderHeight;
+    }
+
     get holderHeightInPx(): string {
         if (this.holderHeight) {
             return this.holderHeight + 'px';
@@ -52,46 +60,39 @@ export class InfiniteList implements AfterViewChecked, AfterViewInit, OnDestroy 
         return '100%';
     }
 
-    ngAfterViewChecked(): void {
-        // must do this in next tick
-        setTimeout(() => {
-            this.measure();
-        });
-    }
-
     ngAfterViewInit(): void {
         if (window) {
             this._subscription.add(Observable.fromEvent(window, 'resize')
-                .throttleTime(100)
                 .subscribe(() => {
-                    this.measure();
+                    let {width, height} = this.measure();
+                    this.sizeChange.next([width, height]);
                 }));
         }
-        if (this.listContainer && this.listContainer.nativeElement) {
-            this._subscription.add(Observable.fromEvent(this.listContainer.nativeElement, 'scroll')
-                // .throttleTime(50)
-                .map(() => {
-                    return this.listContainer.nativeElement.scrollTop;
-                })
-                .subscribe((scrollY) => {
-                    this.scrollPosition.next(scrollY);
-                }));
-        }
+        this._subscription.add(Observable.fromEvent(this.listContainer.nativeElement, 'scroll')
+            .map(() => {
+                return this.listContainer.nativeElement.scrollTop;
+            })
+            .subscribe((scrollY) => {
+                this.scrollPosition.next(scrollY);
+            }));
+
+        let {width, height} = this.measure();
+        this.sizeChange.next([width, height]);
     }
 
     ngOnDestroy(): void {
         this._subscription.unsubscribe();
     }
 
-    private measure() {
+    measure():{width: number, height: number} {
         if (this.listContainer && this.listContainer.nativeElement) {
-            let measuredWidth = this.listContainer.nativeElement.clientWidth;
-            let measuredHeight = this.listContainer.nativeElement.clientHeight;
-            if (measuredWidth !== this._containerWidth || measuredHeight !== this._containerHeight) {
-                this._containerWidth = measuredWidth;
-                this._containerHeight = measuredHeight;
-                this.sizeChange.next([measuredWidth, measuredHeight]);
-            }
+            // let measuredWidth = this.listContainer.nativeElement.clientWidth;
+            // let measuredHeight = this.listContainer.nativeElement.clientHeight;
+            let rect = this.listContainer.nativeElement.getBoundingClientRect();
+            this._containerWidth = rect.width;
+            this._containerHeight = rect.height;
+            return {width: this._containerWidth, height: this._containerHeight};
         }
+        return {width: 0, height: 0};
     }
 }

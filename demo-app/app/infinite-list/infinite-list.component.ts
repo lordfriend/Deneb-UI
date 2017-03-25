@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 @Component({
     selector: 'infinite-list-demo',
     templateUrl: './infinite-list.html',
@@ -8,9 +8,21 @@ import {Component, OnInit} from '@angular/core';
             height: 300px;
             display: block;
         }
+        .outer {
+            position: relative;
+            overflow-y: auto;
+            width: 100%;
+            height: 300px;
+        }
+        .inner {
+            position: relative;
+            width: 100%;
+            height: 950px;
+        }
     `]
 })
 export class InfiniteListDemo implements OnInit {
+
     collection: any[];
 
     ngOnInit(): void {
