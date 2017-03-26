@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 
 require('semantic-ui-less/definitions/collections/menu.less');
+require('semantic-ui-less/definitions/elements/icon.less');
 
 @Component({
     selector: 'pagination-demo',

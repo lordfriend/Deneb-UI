@@ -69,6 +69,30 @@ module.exports = {
                 test: /\.html$/,
                 use: 'raw-loader',
                 exclude: [helpers.root('src/index.html')]
+            },
+            {
+                test: /\.(png|jpg)$/,
+                use: 'file-loader?name=images/[name].[hash].[ext]'
+            },
+            {
+                test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
+                use: 'file-loader?name=fonts/[name].[hash].[ext]&mimetype=application/font-woff'
+            },
+            {
+                test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/,
+                use: 'file-loader?name=fonts/[name].[hash].[ext]&mimetype=application/font-woff'
+            },
+            {
+                test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
+                use: 'file-loader?name=fonts/[name].[hash].[ext]&mimetype=application/octet-stream'
+            },
+            {
+                test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
+                use: 'file-loader?name=fonts/[name].[hash].[ext]'
+            },
+            {
+                test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
+                use: 'file-loader?name=images/[name].[hash].[ext]&mimetype=image/svg+xml'
             }
         ]
     },
@@ -112,6 +136,9 @@ module.exports = {
                     emitErrors: false,
                     failOnHint: false,
                     resourcePath: 'src'
+                },
+                semanticUiLessModuleLoader: {
+                    siteFolder: helpers.root('site')
                 }
             }
         }),

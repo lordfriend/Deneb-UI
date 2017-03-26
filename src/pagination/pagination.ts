@@ -11,9 +11,15 @@ interface PageNumber {
     selector: 'ui-pagination',
     template: `
         <div class="ui pagination menu">
-            <a class="item" *ngFor="let page of pageNumberList" [ngClass]="{active: page.active}"
+            <a class="item page-navigator" [ngClass]="{disabled: currentPage <= 1}" (click)="prevPage()">
+                <i class="angle left icon"></i>
+            </a>
+            <a class="item page-num" *ngFor="let page of pageNumberList" [ngClass]="{active: page.active}"
                (click)="onClickPage(page)">
                 {{page.text}}
+            </a>
+            <a class="item page-navigator" [ngClass]="{disabled: currentPage >= totalPages}" (click)="nextPage()">
+                <i class="angle right icon"></i>
             </a>
         </div>
     `
@@ -26,6 +32,7 @@ export class UIPagination {
     private _max: number = Number.MAX_SAFE_INTEGER;
 
     pageNumberList: PageNumber[] = [];
+    totalPages: number;
 
     @Output()
     pageChange = new EventEmitter<number>();
@@ -72,6 +79,22 @@ export class UIPagination {
         }
     }
 
+    prevPage() {
+        if (this._currentPageNumber <= 1) {
+            return;
+        }
+        this.currentPage--;
+        this.pageChange.emit(this._currentPageNumber);
+    }
+
+    nextPage() {
+        if (this._currentPageNumber >= this.totalPages) {
+            return;
+        }
+        this.currentPage++;
+        this.pageChange.emit(this._currentPageNumber);
+    }
+
     private isUndefined(obj: any) {
         return typeof obj === 'undefined';
     }
@@ -88,10 +111,10 @@ export class UIPagination {
         console.log('rebuild pages');
         let maxSize = this._max;
         let currentPage = this.currentPage;
-        let totalPages = Math.ceil(this._total / this._countPerPage);
+        this.totalPages = Math.ceil(this._total / this._countPerPage);
         let pages: PageNumber [] = [];
-        let startPage = 1, endPage = totalPages;
-        let isMaxSized = maxSize < totalPages;
+        let startPage = 1, endPage = this.totalPages;
+        let isMaxSized = maxSize < this.totalPages;
         if (!isMaxSized) {
             for (let i = startPage; i <= endPage; i++) {
                 if (i == currentPage) {
