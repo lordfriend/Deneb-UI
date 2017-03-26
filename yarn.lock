@@ -2368,10 +2368,6 @@ isbinaryfile@^3.0.0:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/isbinaryfile/-/isbinaryfile-3.0.2.tgz#4a3e974ec0cba9004d3fc6cde7209ea69368a621"
 
-iscroll@^5.2.0:
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/iscroll/-/iscroll-5.2.0.tgz#d513307088b5b25a4f893af474804468481829c8"
-
 isexe@^1.1.1:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/isexe/-/isexe-1.1.2.tgz#36f3e22e60750920f5e7241a476a8c6a42275ad0"
