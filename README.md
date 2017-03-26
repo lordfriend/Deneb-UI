@@ -11,3 +11,4 @@ Current implemented component:
 - Dialog (modal)
 - Toast
 - Pagination
+- InfiniteList
