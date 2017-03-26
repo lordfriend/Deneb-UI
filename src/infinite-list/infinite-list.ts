@@ -1,6 +1,8 @@
 import {Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, Input} from '@angular/core';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 
+export const SCROLL_STOP_TIME_THRESHOLD = 200; // in milliseconds
+
 @Component({
     selector: 'infinite-list',
     template: `
@@ -31,6 +33,10 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
 
     private _subscription: Subscription = new Subscription();
 
+    private _scrollStateChange: BehaviorSubject<SCROLL_STATE> = new BehaviorSubject(SCROLL_STATE.IDLE);
+
+    currentScrollState: SCROLL_STATE = SCROLL_STATE.IDLE;
+
     @ViewChild('listContainer') listContainer: ElementRef;
 
     /**
@@ -42,6 +48,7 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
      * list container width and height.
      */
     sizeChange: BehaviorSubject<number[]> = new BehaviorSubject([0, 0]);
+
 
     set holderHeight(height: number) {
         if (height) {
@@ -60,6 +67,10 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
         return '100%';
     }
 
+    get scrollStateChange(): Observable<SCROLL_STATE> {
+        return this._scrollStateChange.asObservable();
+    }
+
     @Input() rowHeight: number;
 
     ngAfterViewInit(): void {
@@ -74,10 +85,26 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
             .map(() => {
                 return this.listContainer.nativeElement.scrollTop;
             })
-            .subscribe((scrollY) => {
+            .subscribe((scrollY: number) => {
                 // console.log('on scroll ', scrollY);
                 this.scrollPosition.next(scrollY);
             }));
+        this._subscription.add(Observable.fromEvent(this.listContainer.nativeElement, 'scroll')
+            .do(() => {
+                if (this.currentScrollState === SCROLL_STATE.IDLE) {
+                    this.currentScrollState = SCROLL_STATE.SCROLLING;
+                    this._scrollStateChange.next(this.currentScrollState);
+                }
+            })
+            .debounceTime(SCROLL_STOP_TIME_THRESHOLD)
+            .subscribe(
+                ()=> {
+                    if (this.currentScrollState === SCROLL_STATE.SCROLLING) {
+                        this.currentScrollState = SCROLL_STATE.IDLE;
+                        this._scrollStateChange.next(this.currentScrollState);
+                    }
+                }
+            ));
         setTimeout(() => {
             let {width, height} = this.measure();
             this.sizeChange.next([width, height]);
@@ -99,4 +126,9 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
         }
         return {width: 0, height: 0};
     }
+}
+
+export enum SCROLL_STATE {
+    SCROLLING,
+    IDLE
 }
