@@ -1,5 +1,9 @@
-import {Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, Input} from '@angular/core';
+import {
+    Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, Input, Optional, SkipSelf,
+    OnChanges, SimpleChanges
+} from '@angular/core';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
+import {UITimeLineMeter} from '../timeline-meter/timeline-meter';
 
 export const SCROLL_STOP_TIME_THRESHOLD = 200; // in milliseconds
 
@@ -83,6 +87,14 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
 
     @Input() rowHeight: number;
 
+    /**
+     * UITimelineMeter is optional injection. when this component used inside a UITimelineMeter.
+     * it is responsible to update the scrollY
+     * @param _timelineMeter
+     */
+    constructor(@Optional() private _timelineMeter: UITimeLineMeter) {
+    }
+
     ngAfterViewInit(): void {
         if (window) {
             this._subscription.add(Observable.fromEvent(window, 'resize')
@@ -97,6 +109,9 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
             })
             .subscribe((scrollY: number) => {
                 // console.log('on scroll ', scrollY);
+                if (this._timelineMeter) {
+                    this._timelineMeter.setScrollY(scrollY);
+                }
                 this._scrollPosition.next(scrollY);
             }));
         this._subscription.add(Observable.fromEvent(this.listContainer.nativeElement, 'scroll')
