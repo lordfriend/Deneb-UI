@@ -1,0 +1,10 @@
+<div class="ui-timeline-meter-container">
+    <div class="scrollable-content-wrapper">
+        <ng-content></ng-content>
+    </div>
+    <div class="ui-timeline-meter" #meter>
+        <div class="mark" *ngFor="let mark of marks">
+            {{mark}}
+        </div>
+    </div>
+</div>

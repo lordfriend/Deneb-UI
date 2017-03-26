@@ -42,7 +42,6 @@ export class Recycler {
 
     /**
      * scrap view count should not exceed the number of current attached views.
-     * @param limit
      */
     pruneScrapViews() {
         if (this.limit <= 1) {
