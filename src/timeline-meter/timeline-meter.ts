@@ -1,31 +1,38 @@
-import {AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild} from '@angular/core';
+import {
+    AfterViewInit, Component, ElementRef, Input, OnChanges, OnDestroy, Optional, SimpleChanges,
+    ViewChild
+} from '@angular/core';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 @Component({
     selector: 'ui-timeline-meter',
     templateUrl: 'timeline-meter.html',
     styleUrls: ['timeline-meter.less']
 })
-export class UITimeLineMeter implements AfterViewInit, OnDestroy {
+export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
 
     private _subscription = new Subscription();
 
     private _scrollPosition = new BehaviorSubject<number>(0);
 
-    /**
-     * if _rowHeight is set, meter will use this height for all rows.
-     * mark on meter will evenly displaced.
-     * If you use InfiniteList as content, row height must be set.
-     */
-    private _rowHeight: number;
+    private _rowHeightList: number[];
 
     @ViewChild('meter') meter: ElementRef;
 
     @Input()
     timestampList: number[];
 
+    /**
+     * if _rowHeight is set, meter will use this height for all rows.
+     * mark on meter will evenly displaced.
+     * If you use InfiniteList as content, row height must be set.
+     */
+    @Optional()
     @Input()
-    set rowHeight(value: number) {
-        this._rowHeight = value;
+    rowHeight: number;
+
+    set rowHeightList(list: number[]) {
+        this._rowHeightList = list;
+        this.buildMeter();
     }
 
     /**
@@ -80,7 +87,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy {
                 .subscribe(
                     (viewportOffsetY: number) => {
                         let rect = this.meter.nativeElement.getBoundingClientRect();
-                        let scrollY = Math.max(Math.min(viewportOffsetY - rect.top,  rect.height), 0);
+                        let scrollY = Math.max(Math.min(viewportOffsetY - rect.top, rect.height), 0);
                         this.scrollTo(scrollY);
                     }
                 )
@@ -89,6 +96,22 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy {
 
     ngOnDestroy(): void {
         this._subscription.unsubscribe();
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if ('timestampList' in changes || 'rowHeight' in changes) {
+            this.buildMeter();
+        }
+    }
+
+    private buildMeter() {
+        if (this.rowHeight && this.timestampList) {
+            this._rowHeightList = [];
+            for (let i = 0; i< this.timestampList.length; i++) {
+                this._rowHeightList.push(this.rowHeight);
+            }
+        }
+        // need an algorithm to build meter
     }
 
     private scrollTo(pos: number) {
