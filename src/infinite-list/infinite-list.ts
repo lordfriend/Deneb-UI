@@ -75,6 +75,7 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
                 return this.listContainer.nativeElement.scrollTop;
             })
             .subscribe((scrollY) => {
+                // console.log('on scroll ', scrollY);
                 this.scrollPosition.next(scrollY);
             }));
         setTimeout(() => {

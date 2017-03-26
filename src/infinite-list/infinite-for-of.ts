@@ -61,6 +61,13 @@ export class Recycler {
         this.limit = limit;
         this.pruneScrapViews();
     }
+
+    clean() {
+        this._scrapViews.forEach((view: ViewRef) => {
+            view.destroy();
+        });
+        this._scrapViews.clear();
+    }
 }
 
 export class InfiniteRow {
@@ -242,6 +249,7 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         this._subscription.unsubscribe();
+        this._recycler.clean();
     }
 
     private requestMeasure() {
@@ -249,14 +257,14 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit, OnDestroy {
             clearTimeout(this._pendingMeasurement);
             this._pendingMeasurement = window.setTimeout(() => {
                 this.requestMeasure();
-            }, 10);
+            }, 60);
             return;
         }
         this.measure();
     }
 
     private requestLayout() {
-        console.log('requestLayout');
+        console.log('requestLayout', this._infiniteList.rowHeight, this._containerHeight, this._collection.length);
         if (!this._isInMeasure && this._infiniteList.rowHeight) {
             this.layout();
         }
