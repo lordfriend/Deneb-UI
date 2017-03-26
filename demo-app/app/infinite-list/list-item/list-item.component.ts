@@ -22,8 +22,8 @@ export class ListItemExample implements OnDestroy {
 
     private _subscription = new Subscription();
 
-    constructor(private _infiniList: InfiniteList) {
-        this._subscription.add(this._infiniList.scrollStateChange.subscribe((state: SCROLL_STATE) => {
+    constructor(private _infiniteList: InfiniteList) {
+        this._subscription.add(this._infiniteList.scrollStateChange.subscribe((state: SCROLL_STATE) => {
             console.log('state changed: ', state);
         }));
     }

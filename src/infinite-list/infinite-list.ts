@@ -34,21 +34,12 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
     private _subscription: Subscription = new Subscription();
 
     private _scrollStateChange: BehaviorSubject<SCROLL_STATE> = new BehaviorSubject(SCROLL_STATE.IDLE);
+    private _scrollPosition: BehaviorSubject<number> = new BehaviorSubject(0);
+    private _sizeChange: BehaviorSubject<number[]> = new BehaviorSubject([0, 0]);
 
     currentScrollState: SCROLL_STATE = SCROLL_STATE.IDLE;
 
     @ViewChild('listContainer') listContainer: ElementRef;
-
-    /**
-     * current scroll position subject.
-     * @type {number}
-     */
-    scrollPosition: BehaviorSubject<number> = new BehaviorSubject(0);
-    /**
-     * list container width and height.
-     */
-    sizeChange: BehaviorSubject<number[]> = new BehaviorSubject([0, 0]);
-
 
     set holderHeight(height: number) {
         if (height) {
@@ -67,8 +58,27 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
         return '100%';
     }
 
+    /**
+     * scroll state change
+     * @returns {Observable<SCROLL_STATE>}
+     */
     get scrollStateChange(): Observable<SCROLL_STATE> {
         return this._scrollStateChange.asObservable();
+    }
+
+    /**
+     * current scroll position.
+     * @type {number}
+     */
+    get scrollPosition(): Observable<number> {
+        return this._scrollPosition.asObservable();
+    }
+
+    /**
+     * list container width and height.
+     */
+    get sizeChange(): Observable<number[]> {
+        return this._sizeChange.asObservable();
     }
 
     @Input() rowHeight: number;
@@ -78,7 +88,7 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
             this._subscription.add(Observable.fromEvent(window, 'resize')
                 .subscribe(() => {
                     let {width, height} = this.measure();
-                    this.sizeChange.next([width, height]);
+                    this._sizeChange.next([width, height]);
                 }));
         }
         this._subscription.add(Observable.fromEvent(this.listContainer.nativeElement, 'scroll')
@@ -87,7 +97,7 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
             })
             .subscribe((scrollY: number) => {
                 // console.log('on scroll ', scrollY);
-                this.scrollPosition.next(scrollY);
+                this._scrollPosition.next(scrollY);
             }));
         this._subscription.add(Observable.fromEvent(this.listContainer.nativeElement, 'scroll')
             .do(() => {
@@ -107,7 +117,7 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
             ));
         setTimeout(() => {
             let {width, height} = this.measure();
-            this.sizeChange.next([width, height]);
+            this._sizeChange.next([width, height]);
         });
     }
 
