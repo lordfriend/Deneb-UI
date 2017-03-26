@@ -5,7 +5,7 @@ import {UIPagination} from './pagination';
 import {By} from '@angular/platform-browser';
 
 function itemToArray(el: HTMLElement): string[] {
-    let arr = [], allItems = el.querySelectorAll('.item');
+    let arr = [], allItems = el.querySelectorAll('.item.page-num');
     for (let i = 0; i < allItems.length; i++) {
         arr.push(allItems[i].textContent.trim());
     }
