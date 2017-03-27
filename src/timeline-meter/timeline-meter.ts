@@ -22,6 +22,22 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
     timestampList: number[];
 
     /**
+     * minLabelSpan is used to regular what span of time should a label be displayed.
+     * The labels display may vary base on timestamp list, height of each row and height of meter.
+     * But the minimal time span of the label is not less than this value.
+     * @type {string}
+     */
+    @Input()
+    minLabelSpan: 'year' | 'season' | 'month' | 'week' | 'day' | 'hour' = 'season';
+
+    /**
+     * minMarkSpan should always smaller than minLabelSpan
+     * @type {string}
+     */
+    @Input()
+    minMarkSpan: 'season' | 'month' | 'week' | 'day' | 'hour' = 'week';
+
+    /**
      * if _rowHeight is set, meter will use this height for all rows.
      * mark on meter will evenly displaced.
      * If you use InfiniteList as content, row height must be set.
