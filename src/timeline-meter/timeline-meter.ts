@@ -13,7 +13,7 @@ export class RowItem {
 }
 
 export class Marker {
-    labelSpan: 'string';
+    label: string;
     items: RowItem[];
 }
 
@@ -47,7 +47,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
      * @type {string}
      */
     @Input()
-    labelSpan: 'year' | 'season' | 'month' | 'week' | 'day' | 'hour' = 'season';
+    labelSpan: 'year' | 'month' | 'day' | 'hour' = 'year';
 
     @Input()
     labelDateFormat: string;
@@ -57,7 +57,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
      * @type {string}
      */
     @Input()
-    markSpan: 'season' | 'month' | 'week' | 'day' | 'hour' = 'month';
+    markSpan: 'month' | 'week' | 'day' | 'hour' = 'month';
 
     @Input()
     showMarker: boolean = true;
@@ -183,26 +183,79 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
             });
         }
         this.marker = [];
-        // need an algorithm to build meter
-        let firstItem = this._itemList[0];
-        let lastItem = this._itemList[this._itemList.length - 1];
-        let labelSpan;
-        // if (firstItem.date.getFullYear() === lastItem.date.getFullYear()) {
-        //     if (Math.abs(firstItem.date.getMonth() - lastItem.date.getMonth()) <= 3) {
-        //         if (firstItem.date.getMonth() === lastItem.date.getMonth()) {
-        //             if (firstItem.date.getMonth())
-        //         } else {
-        //             labelSpan = 'month';
-        //         }
-        //     } else {
-        //         // same year but different season. use season as label
-        //         labelSpan = 'season';
-        //     }
-        // } else {
-        //     labelSpan = 'year';
-        // }
-        let i = 1;
-        let lastGroupStart = this._itemList[0];
+        if (this._itemList.length > 0) {
+
+        }
+        let lastMarker = new Marker();
+        this.marker.push(lastMarker);
+        lastMarker.items.push(this._itemList[0]);
+        lastMarker.label = this.getLabel(this._itemList[0].date, true);
+        for (let i = 1; i < this._itemList.length; i++) {
+            let item = this._itemList[i];
+            let {same, parentSame} = this.isInSameMarker(lastMarker[0].date, item.date);
+            if (same) {
+                lastMarker.items.push(item);
+            } else {
+                lastMarker = new Marker();
+                this.marker.push(lastMarker);
+                lastMarker.items.push(item);
+                lastMarker.label = this.getLabel(item.date, !parentSame);
+            }
+        }
+    }
+
+    private isInSameMarker(date1, date2): {same: boolean, parentSame: boolean} {
+        let sameHours = date1.getHours() === date2.getHours();
+        let sameDay = date1.getDay() === date2.getDay();
+        let sameMonth = date1.getMonth() === date2.getMonth();
+        let sameYear = date1.getFullYear() === date2.getFullYear();
+        switch (this.labelSpan) {
+            case 'hour':
+                return {
+                    same: sameHours && sameDay && sameMonth && sameYear,
+                    parentSame: sameDay && sameMonth && sameYear
+                };
+            case 'day':
+                return {
+                    same: sameDay && sameMonth && sameYear,
+                    parentSame: sameMonth && sameYear
+                };
+            case 'month':
+                return {
+                    same: sameMonth && sameYear,
+                    parentSame: sameYear
+                };
+            case 'year':
+                return {
+                    same: sameYear,
+                    parentSame: true
+                }
+        }
+    }
+
+    private getLabel(date: Date, needParentUnit: boolean): string {
+        switch (this.labelSpan) {
+            case 'year':
+                return date.getFullYear() + '';
+            case 'month':
+                let month = (date.getMonth() + 1) + '';
+                if (needParentUnit) {
+                    return date.getFullYear() + '-' + month;
+                }
+                return month;
+            case 'day':
+                let day = (date.getDay() + 1) + '';
+                if (needParentUnit) {
+                    return (date.getMonth() + 1) + '-' + day;
+                }
+                break;
+            case 'hour':
+                let hour = (date.getHours()) + ':00';
+                if (needParentUnit) {
+                    return (date.getDay() + 1) + ' ' + hour;
+                }
+                return hour;
+        }
     }
 
     private scrollTo(pos: number) {
