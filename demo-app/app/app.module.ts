@@ -8,6 +8,7 @@ import {ToastDemo} from './toast/toast.component';
 import {PaginationDemo} from './pagination/pagination.component';
 import {InfiniteListDemo} from './infinite-list/infinite-list.component';
 import {ListItemExample} from './infinite-list/list-item/list-item.component';
+import {TimelineMeterExample} from './timeline-meter/timeline-meter.component';
 @NgModule({
     declarations: [
         App,
@@ -16,7 +17,8 @@ import {ListItemExample} from './infinite-list/list-item/list-item.component';
         ToastDemo,
         PaginationDemo,
         InfiniteListDemo,
-        ListItemExample
+        ListItemExample,
+        TimelineMeterExample
     ],
     imports: [UIModule, BrowserModule],
     bootstrap: [App],

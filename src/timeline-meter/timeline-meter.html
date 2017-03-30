@@ -3,8 +3,9 @@
         <ng-content></ng-content>
     </div>
     <div class="ui-timeline-meter" #meter>
-        <div class="mark" *ngFor="let mark of marks">
-            {{mark}}
+        <div class="label-bucket" *ngFor="let label of labelList" [style.height]="(label.totalHeightPercent * 100) + '%'">
+            <div class="label" *ngIf="label.showLabel">{{label.label}}</div>
+            <div class="marker" *ngFor="let marker of label.markers" [style.height]="(marker.totalHeightPercent / label.totalHeightPercent * 100) + '%'"></div>
         </div>
     </div>
 </div>

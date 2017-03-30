@@ -9,13 +9,24 @@ export class RowItem {
     // use native Date instead Momentjs to get a good performance
     // https://jsperf.com/moment-js-vs-native-date
     date: Date;
-    rowHeight: number;
+    rowHeightPercent: number;
 }
 
 export class Marker {
-    label: string;
-    items: RowItem[];
+    items: RowItem[] = [];
+    totalHeightPercent: number = 0;
+    showMarker: boolean = true;
 }
+
+export class Label {
+    label: string;
+    leadDate: Date;
+    markers: Marker[] = [];
+    totalHeightPercent: number = 0;
+    showLabel: boolean = true;
+}
+
+export const MARKER_MARGIN = 10;
 
 @Component({
     selector: 'ui-timeline-meter',
@@ -33,7 +44,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
     private _meterWidth: number;
     private _meterHeight: number;
 
-    marker: Marker[];
+    labelList: Label[];
 
     @ViewChild('meter') meter: ElementRef;
 
@@ -64,7 +75,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
 
     /**
      * if _rowHeight is set, meter will use this height for all rows.
-     * mark on meter will evenly displaced.
+     * mark on meter will be evenly placed.
      * If you use InfiniteList as content, row height must be set.
      */
     @Optional()
@@ -72,15 +83,16 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
     rowHeight: number;
 
     set rowHeightList(list: number[]) {
+        let totalHeight = list.reduce((prev, curr) => prev + curr, 0);
         this._itemList = list.map((rowHeight, index) => {
             let item = new RowItem();
-            item.rowHeight = rowHeight;
+            item.rowHeightPercent = rowHeight / totalHeight;
             if (this.timestampList && this.timestampList[index]) {
                 item.date = new Date(this.timestampList[index]);
             }
             return item;
         });
-        this.buildMeter();
+        this.buildMeter(null, this.timestampList);
     }
 
     /**
@@ -146,12 +158,13 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                 .debounceTime(300)
                 .subscribe(
                     () => {
-                        let rect = this.meter.nativeElement.getBoundingClientRect();
-                        this._meterWidth = rect.width;
-                        this._meterHeight = rect.height;
+                        this.measure();
                     }
                 ));
         }
+        setTimeout(() => {
+            this.measure();
+        });
     }
 
     ngOnDestroy(): void {
@@ -168,48 +181,100 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
             }
         }
         if ('timestampList' in changes || 'rowHeight' in changes) {
-            this.buildMeter();
+            let timestampList = 'timestampList' in changes ? changes['timestampList'].currentValue : this.timestampList;
+            let rowHeight = 'rowHeight' in changes ? changes['rowHeight'].currentValue : this.rowHeight;
+            this.buildMeter(rowHeight, timestampList);
         }
     }
 
-    private buildMeter() {
-        if (this.rowHeight && this.timestampList) {
-            this._itemList = [];
-            this._itemList = this.timestampList.map((timestamp) => {
-                let item = new RowItem();
-                item.date = new Date(timestamp);
-                item.rowHeight = this.rowHeight;
-                return item;
-            });
+    private measure() {
+        if (!this.labelList) {
+            return;
         }
-        this.marker = [];
-        if (this._itemList.length > 0) {
-
+        let computedFontSize = parseFloat(window.getComputedStyle(this.meter.nativeElement).getPropertyValue('font-size').match(/(\d+(?:\.\d+)?)px/)[1]);
+        let rect = this.meter.nativeElement.getBoundingClientRect();
+        this._meterWidth = rect.width;
+        this._meterHeight = rect.height;
+        if (!this._meterWidth || !this._meterHeight) {
+            return;
         }
-        let lastMarker = new Marker();
-        this.marker.push(lastMarker);
-        lastMarker.items.push(this._itemList[0]);
-        lastMarker.label = this.getLabel(this._itemList[0].date, true);
-        for (let i = 1; i < this._itemList.length; i++) {
-            let item = this._itemList[i];
-            let {same, parentSame} = this.isInSameMarker(lastMarker[0].date, item.date);
-            if (same) {
-                lastMarker.items.push(item);
+        let lp = 0, rp = this.labelList.length - 2;
+        let heightFromTop = 0, heightFromBottom = 0;
+        console.log(computedFontSize + MARKER_MARGIN);
+        while(lp < rp) {
+            heightFromTop += this.labelList[lp].totalHeightPercent * this._meterHeight;
+            // console.log(heightFromTop);
+            if (heightFromTop < (computedFontSize + MARKER_MARGIN)) {
+                this.labelList[++lp].showLabel = false;
             } else {
-                lastMarker = new Marker();
-                this.marker.push(lastMarker);
-                lastMarker.items.push(item);
-                lastMarker.label = this.getLabel(item.date, !parentSame);
+                lp++;
+                // this.marker[++lp].showLabel = true;
+                heightFromTop = 0;
+            }
+            heightFromBottom =+ this.labelList[rp].totalHeightPercent * this._meterHeight;
+            if (heightFromBottom < (computedFontSize + MARKER_MARGIN)) {
+                this.labelList[rp--].showLabel = false;
+            } else {
+                rp--;
+                heightFromBottom = 0;
             }
         }
     }
 
-    private isInSameMarker(date1, date2): {same: boolean, parentSame: boolean} {
+    private buildMeter(rowHeight: number, timestampList: number[]) {
+        if (rowHeight && timestampList) {
+            this._itemList = [];
+            this._itemList = timestampList.map((timestamp) => {
+                let item = new RowItem();
+                item.date = new Date(timestamp);
+                item.rowHeightPercent = 1 / timestampList.length;
+                return item;
+            });
+        }
+        if (!this._itemList || this._itemList.length === 0) {
+            return;
+        }
+        this.labelList = [];
+        let lastLabel = new Label();
+        this.labelList.push(lastLabel);
+        let lastMarker = new Marker();
+        lastMarker.totalHeightPercent = this._itemList[0].rowHeightPercent;
+        lastMarker.items.push(this._itemList[0]);
+        lastLabel.markers.push(lastMarker);
+        lastLabel.leadDate = this._itemList[0].date;
+        lastLabel.label = this.getLabel(lastLabel.leadDate, true);
+        for (let i = 1; i < this._itemList.length; i++) {
+            let item = this._itemList[i];
+            let sameMarker = this.isInSameSpan(lastMarker.items[0].date, item.date, this.markSpan);
+            if (sameMarker.same) {
+                lastMarker.items.push(item);
+                lastMarker.totalHeightPercent += item.rowHeightPercent;
+            } else {
+                lastLabel.totalHeightPercent += lastMarker.totalHeightPercent;
+                lastMarker = new Marker();
+                lastMarker.items.push(item);
+                lastMarker.totalHeightPercent = item.rowHeightPercent;
+                let sameLabel = this.isInSameSpan(lastLabel.leadDate, item.date, this.labelSpan);
+                if (sameLabel.same) {
+                    lastLabel.markers.push(lastMarker);
+                } else {
+                    lastLabel = new Label();
+                    lastLabel.markers.push(lastMarker);
+                    lastLabel.leadDate = lastMarker.items[0].date;
+                    lastLabel.label = this.getLabel(lastLabel.leadDate, !sameLabel.parentSame);
+                    this.labelList.push(lastLabel);
+                }
+            }
+        }
+        this.measure();
+    }
+
+    private isInSameSpan(date1, date2, span): {same: boolean, parentSame: boolean} {
         let sameHours = date1.getHours() === date2.getHours();
         let sameDay = date1.getDay() === date2.getDay();
         let sameMonth = date1.getMonth() === date2.getMonth();
         let sameYear = date1.getFullYear() === date2.getFullYear();
-        switch (this.labelSpan) {
+        switch (span) {
             case 'hour':
                 return {
                     same: sameHours && sameDay && sameMonth && sameYear,
