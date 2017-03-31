@@ -50,6 +50,9 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
     private _meterWidth: number;
     private _meterHeight: number;
 
+    private _isBuilding: boolean;
+    private _isInMeasure: boolean;
+
     labelList: Label[];
     /**
      * we maintain this list which only contains label an mark whose showLabel or showMarker property is true.
@@ -70,9 +73,6 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
      */
     @Input()
     labelSpan: 'year' | 'month' | 'day' | 'hour' = 'year';
-
-    @Input()
-    labelDateFormat: string;
 
     /**
      * markSpan should always smaller than labelSpan
@@ -114,6 +114,11 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
 
     }
 
+    /**
+     * scroll position is a percentage float number.
+     * content component should calculate actual scrollY multiply its own height
+     * @returns {Observable<number>}
+     */
     get scrollPosition(): Observable<number> {
         return this._scrollPosition.asObservable();
     }
@@ -196,9 +201,19 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
             let rowHeight = 'rowHeight' in changes ? changes['rowHeight'].currentValue : this.rowHeight;
             this.buildMeter(rowHeight, timestampList);
         }
+        if ('showMarker' in changes && !this._isBuilding && !this._isInMeasure) {
+            this.makeRenderEntity();
+        }
     }
 
+    /**
+     * to increase performance. we only render a list of entity which can be both label and marker but only those to be shown
+     * will be in this list.
+     */
     private makeRenderEntity() {
+        if (!this.labelList || this.labelList.length === 0) {
+            return;
+        }
         let labelTop = 0;
         let markerTop = 0;
         this.renderEntityList = [];
@@ -209,17 +224,23 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
             if (label.showLabel) {
                 this.renderEntityList.push(new RenderEntity(true, label.label, labelTop * 100 + '%'));
             }
-            for (let j = 0; j < label.markers.length; j++) {
-                marker = label.markers[j];
-                if (marker.showMarker) {
-                    this.renderEntityList.push(new RenderEntity(false, null, markerTop * 100 + '%'));
+            if (this.showMarker) {
+                for (let j = 0; j < label.markers.length; j++) {
+                    marker = label.markers[j];
+                    if (marker.showMarker) {
+                        this.renderEntityList.push(new RenderEntity(false, null, markerTop * 100 + '%'));
+                    }
+                    markerTop += marker.totalHeightPercent;
                 }
-                markerTop += marker.totalHeightPercent;
             }
             labelTop += label.totalHeightPercent;
         }
     }
 
+    /**
+     * measure the marker
+     * @param computedFontSize
+     */
     private measureMarker(computedFontSize: number) {
         let markerTopMargin = 0;
         let markerBottomMargin = 0;
@@ -254,10 +275,15 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         }
     }
 
+    /**
+     * Once we have labelList ready. we need to measure the meter height and width. then if height is available. we need to decide
+     * which label and marker should be show depending on their height and our rule.
+     */
     private measure() {
-        if (!this.labelList) {
+        if (!this.labelList || this._isInMeasure) {
             return;
         }
+        this._isInMeasure = true;
         let computedFontSize = parseFloat(window.getComputedStyle(this.meter.nativeElement).getPropertyValue('font-size').match(/(\d+(?:\.\d+)?)px/)[1]);
         let rect = this.meter.nativeElement.getBoundingClientRect();
         this._meterWidth = rect.width;
@@ -288,9 +314,25 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         }
         this.measureMarker(computedFontSize);
         this.makeRenderEntity();
+        this._isInMeasure = false;
     }
 
+    /**
+     * build our labelList to store the label, mark tree. each row item is group to markers and then markers group
+     * to labels depending on their label time span and marker time span.
+     * this method will be called in two situation:
+     * - rowHeight and timestampList are all available. then build _itemList base on these two information. in this case,
+     *  every row has some height. this is usually happened when you use InfiniteList with this component.
+     * - rowHeightList is set by content child, this is the case when you use ScrollableContent component with this component.
+     *  In this case, _itemList has already built.
+     * @param rowHeight
+     * @param timestampList
+     */
     private buildMeter(rowHeight: number, timestampList: number[]) {
+        if (this._isBuilding) {
+            return;
+        }
+        this._isBuilding = true;
         performance.mark('start_building');
         if (rowHeight && timestampList) {
             this._itemList = [];
@@ -341,6 +383,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         performance.measure('building_performance', 'start_building', 'end_building');
         console.log(window.performance.getEntriesByType('measure'));
         performance.clearMarks();
+        this._isBuilding = false;
     }
 
     private isInSameSpan(date1, date2, span): {same: boolean, parentSame: boolean} {
@@ -372,6 +415,15 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         }
     }
 
+    /**
+     * get label string represent for given date in label time span
+     * TODO: need i18n compatibility for label.
+     * @param date the date used to get label.
+     * @param needParentUnit sometimes, a label in certain time span is reset from the beginning. to give enough information
+     * a parent time span will added to this label. e.g. labelSpan = 'hour', we have a series of label 11, 12, 1, 2... 11,
+     * we know that second 11 is the 11hrs of second day. But add the day will be more informative.
+     * @returns {string}
+     */
     private getLabel(date: Date, needParentUnit: boolean): string {
         switch (this.labelSpan) {
             case 'year':
@@ -397,7 +449,35 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         }
     }
 
+    /**
+     * This method is called every time a user click or move on this meter.
+     * A popover should be shown contain current pointed item date (up to marker span accuracy).
+     * then content component should be scroll to corresponding position.
+     * @param pos
+     */
     private scrollTo(pos: number) {
-
+        if (!this._meterHeight || !this._itemList) {
+            return;
+        }
+        let scrollYPercentage = pos / this._meterHeight;
+        // let content component know
+        this._scrollPosition.next(scrollYPercentage);
+        let heightFromTop = 0;
+        let pointedItem = null;
+        if (scrollYPercentage === 0) {
+            pointedItem = this._itemList[0];
+        } else {
+            for(let i = 0; i < this._itemList.length; i++) {
+                let item = this._itemList[i];
+                if (heightFromTop > scrollYPercentage && i > 0) {
+                    pointedItem = this._itemList[i - 1];
+                }
+                heightFromTop += item.rowHeightPercent;
+            }
+        }
+        if (!pointedItem) {
+            pointedItem = this._itemList[this._itemList.length - 1];
+        }
+        // TODO: show item
     }
 }
