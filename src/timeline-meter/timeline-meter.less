@@ -18,8 +18,10 @@
     height: 100%;
     top: 0;
     right: 0;
-    .label-bucket {
-      position: relative;
+    .render-entity {
+      position: absolute;
+      right: 0;
+      width: 100%;
       .label {
         position: absolute;
         top: 0;
@@ -27,17 +29,13 @@
         line-height: 1;
       }
       .marker {
-        position: relative;
-        &:before {
-          position: absolute;
-          display: block;
-          width: @marker-width;
-          height: 1px;
-          background-color: #777777;
-          top: 0;
-          right: 0;
-          content: " ";
-        }
+        position: absolute;
+        display: block;
+        width: @marker-width;
+        height: 1px;
+        background-color: #777777;
+        top: 0;
+        right: 0;
       }
     }
   }

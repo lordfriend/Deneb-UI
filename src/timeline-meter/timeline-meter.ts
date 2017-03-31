@@ -15,7 +15,7 @@ export class RowItem {
 export class Marker {
     items: RowItem[] = [];
     totalHeightPercent: number = 0;
-    showMarker: boolean = true;
+    showMarker: boolean = false;
 }
 
 export class Label {
@@ -26,7 +26,13 @@ export class Label {
     showLabel: boolean = true;
 }
 
-export const MARKER_MARGIN = 10;
+export class RenderEntity {
+    constructor(public isLabel: boolean, public label: string, public top: string) {
+    }
+}
+
+export const LABEL_MARGIN = 15;
+export const MARKER_MARGIN = 8;
 
 @Component({
     selector: 'ui-timeline-meter',
@@ -45,6 +51,11 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
     private _meterHeight: number;
 
     labelList: Label[];
+    /**
+     * we maintain this list which only contains label an mark whose showLabel or showMarker property is true.
+     * this approach could reduce DOM elements and increase speed and save memory
+     */
+    renderEntityList: RenderEntity[];
 
     @ViewChild('meter') meter: ElementRef;
 
@@ -187,6 +198,62 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         }
     }
 
+    private makeRenderEntity() {
+        let labelTop = 0;
+        let markerTop = 0;
+        this.renderEntityList = [];
+        let label: Label, marker: Marker;
+        for (let i = 0; i < this.labelList.length; i++) {
+            label = this.labelList[i];
+            markerTop = labelTop;
+            if (label.showLabel) {
+                this.renderEntityList.push(new RenderEntity(true, label.label, labelTop * 100 + '%'));
+            }
+            for (let j = 0; j < label.markers.length; j++) {
+                marker = label.markers[j];
+                if (marker.showMarker) {
+                    this.renderEntityList.push(new RenderEntity(false, null, markerTop * 100 + '%'));
+                }
+                markerTop += marker.totalHeightPercent;
+            }
+            labelTop += label.totalHeightPercent;
+        }
+    }
+
+    private measureMarker(computedFontSize: number) {
+        let markerTopMargin = 0;
+        let markerBottomMargin = 0;
+        let label, prevLabel, lastMarker, bp;
+        for(let i = 0; i < this.labelList.length; i++) {
+            label = this.labelList[i];
+            if (label.showLabel) {
+                // check previous label's last marker margin to avoid it too close to current label.
+                if (i > 0) {
+                    prevLabel = this.labelList[i - 1];
+                    bp = prevLabel.markers.length - 1;
+                    lastMarker = prevLabel.markers[bp];
+                    markerBottomMargin = lastMarker.totalHeightPercent * this._meterHeight;
+                    while(markerBottomMargin < MARKER_MARGIN && bp > 0) {
+                        lastMarker.showMarker = false;
+                        bp--;
+                        lastMarker = prevLabel.markers[bp];
+                        markerBottomMargin += lastMarker.totalHeightPercent * this._meterHeight;
+                    }
+                }
+                markerTopMargin -= computedFontSize + MARKER_MARGIN;
+            }
+            for (let j = 0; j < label.markers.length; j++) {
+                let marker = label.markers[j];
+                if (markerTopMargin > MARKER_MARGIN) {
+                    marker.showMarker = true;
+                    markerTopMargin = marker.totalHeightPercent * this._meterHeight;
+                } else {
+                    markerTopMargin += marker.totalHeightPercent * this._meterHeight;
+                }
+            }
+        }
+    }
+
     private measure() {
         if (!this.labelList) {
             return;
@@ -200,28 +267,31 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         }
         let lp = 0, rp = this.labelList.length - 2;
         let heightFromTop = 0, heightFromBottom = 0;
-        console.log(computedFontSize + MARKER_MARGIN);
+        console.log(computedFontSize + LABEL_MARGIN);
         while(lp < rp) {
             heightFromTop += this.labelList[lp].totalHeightPercent * this._meterHeight;
             // console.log(heightFromTop);
-            if (heightFromTop < (computedFontSize + MARKER_MARGIN)) {
+            if (heightFromTop < (computedFontSize + LABEL_MARGIN)) {
                 this.labelList[++lp].showLabel = false;
             } else {
                 lp++;
                 // this.marker[++lp].showLabel = true;
                 heightFromTop = 0;
             }
-            heightFromBottom =+ this.labelList[rp].totalHeightPercent * this._meterHeight;
-            if (heightFromBottom < (computedFontSize + MARKER_MARGIN)) {
+            heightFromBottom += this.labelList[rp].totalHeightPercent * this._meterHeight;
+            if (heightFromBottom < (computedFontSize + LABEL_MARGIN)) {
                 this.labelList[rp--].showLabel = false;
             } else {
                 rp--;
                 heightFromBottom = 0;
             }
         }
+        this.measureMarker(computedFontSize);
+        this.makeRenderEntity();
     }
 
     private buildMeter(rowHeight: number, timestampList: number[]) {
+        performance.mark('start_building');
         if (rowHeight && timestampList) {
             this._itemList = [];
             this._itemList = timestampList.map((timestamp) => {
@@ -267,6 +337,10 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
             }
         }
         this.measure();
+        performance.mark('end_building');
+        performance.measure('building_performance', 'start_building', 'end_building');
+        console.log(window.performance.getEntriesByType('measure'));
+        performance.clearMarks();
     }
 
     private isInSameSpan(date1, date2, span): {same: boolean, parentSame: boolean} {
