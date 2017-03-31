@@ -22,9 +22,10 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    cursor: row-resize;
     .render-entity {
       position: absolute;
-      right: 0;
+      right: 0.4rem;
       width: 100%;
       .label {
         position: absolute;
@@ -36,10 +37,65 @@
         position: absolute;
         display: block;
         width: @marker-width;
-        height: 1px;
-        background-color: #777777;
+        height: 2px;
+        background-color: rgba(0, 0, 0, 0.4);
         top: 0;
         right: 0;
+      }
+    }
+    .meter-tooltip {
+      position: absolute;
+      left: 0;
+      background-color: #000000;
+      -webkit-box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+      -moz-box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+      box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+      color: #ffffff;
+      font-size: 1rem;
+      white-space: nowrap;
+      height: 2rem;
+      line-height: 2rem;
+      text-align: center;
+      transform: translate3d(-100%, 0, 0);
+      &.month {
+        width: 6rem;
+      }
+      &.day {
+        width: 5rem;
+      }
+      &.hour {
+        width: 6rem;
+      }
+    }
+    .float-mark {
+      height: 2px;
+      position: absolute;
+      right: 0;
+      background-color: #7371ba;
+      transform: translate3d(0, 0, 0);
+    }
+    &.year {
+      width: 2.8rem;
+      .float-mark {
+        width: 2.6rem;
+      }
+    }
+    &.month {
+      width: 4.8rem;
+      .float-mark {
+        width: 4.4rem;
+      }
+    }
+    &.day {
+      width: 2.8rem;
+      .float-mark {
+        width: 2.6rem;
+      }
+    }
+    &.hour {
+      width: 4.8rem;
+      .float-mark {
+        width: 4.4rem;
       }
     }
   }

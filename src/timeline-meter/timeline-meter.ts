@@ -10,6 +10,9 @@ export class RowItem {
     // https://jsperf.com/moment-js-vs-native-date
     date: Date;
     rowHeightPercent: number;
+    // used by pointedItem;
+    label: string;
+    pos: string;
 }
 
 export class Marker {
@@ -53,12 +56,19 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
     private _isBuilding: boolean;
     private _isInMeasure: boolean;
 
+    private _toolTipHeight: number;
+
     labelList: Label[];
     /**
      * we maintain this list which only contains label an mark whose showLabel or showMarker property is true.
      * this approach could reduce DOM elements and increase speed and save memory
      */
     renderEntityList: RenderEntity[];
+
+    showTooltip: boolean = false;
+    floatMarkPos: string;
+
+    pointedItem: RowItem;
 
     @ViewChild('meter') meter: ElementRef;
 
@@ -142,6 +152,9 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         // for touch event
         this._subscription.add(
             Observable.fromEvent(meterEl, 'touchstart')
+                .do(() => {
+                    this.showTooltip = true;
+                })
                 .map((event: TouchEvent) => {
                     event.preventDefault();
                     return event.touches[0].clientY;
@@ -158,12 +171,21 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                                     event.preventDefault();
                                     return event.changedTouches[0].clientY;
                                 })
+                        )
+                        .do(
+                            () => {},
+                            () => {},
+                            () => {
+                                this.showTooltip = false;
+                            }
                         );
                 })
                 .subscribe(
                     (viewportOffsetY: number) => {
                         let rect = this.meter.nativeElement.getBoundingClientRect();
                         let scrollY = Math.max(Math.min(viewportOffsetY - rect.top, rect.height), 0);
+                        this.updatePointedItem(scrollY);
+                        this.floatMarkPos = `translate3d(0, ${scrollY}px, 0)`;
                         this.scrollTo(scrollY);
                     }
                 )
@@ -178,6 +200,40 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                     }
                 ));
         }
+
+        this._subscription.add(
+            Observable.fromEvent(meterEl, 'mouseenter')
+                .do(() => {
+                    this.showTooltip = true;
+                })
+                .flatMap(() => {
+                    return Observable.fromEvent(meterEl, 'mousemove')
+                        .takeUntil(Observable.fromEvent(meterEl, 'mouseleave'))
+                        .do(
+                            (event: MouseEvent) => {
+                                // sometimes mouseleave isn't fired as expected. this may be some bug.
+                                // so we need to check manually
+                                if (event.clientY > this._meterHeight) {
+                                    this.showTooltip = false;
+                                }
+                            },
+                            () => {},
+                            () => {
+                                console.log('leave');
+                                this.showTooltip = false;
+                            }
+                        );
+                })
+                .subscribe(
+                    (event: MouseEvent) => {
+                        let scrollY = event.clientY;
+                        this.updatePointedItem(scrollY);
+                        this.floatMarkPos = `translate3d(0, ${scrollY}px, 0)`;
+                    }
+                )
+        );
+
+        // measure once view is ready
         setTimeout(() => {
             this.measure();
         });
@@ -245,7 +301,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         let markerTopMargin = 0;
         let markerBottomMargin = 0;
         let label, prevLabel, lastMarker, bp;
-        for(let i = 0; i < this.labelList.length; i++) {
+        for (let i = 0; i < this.labelList.length; i++) {
             label = this.labelList[i];
             if (label.showLabel) {
                 // check previous label's last marker margin to avoid it too close to current label.
@@ -254,7 +310,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                     bp = prevLabel.markers.length - 1;
                     lastMarker = prevLabel.markers[bp];
                     markerBottomMargin = lastMarker.totalHeightPercent * this._meterHeight;
-                    while(markerBottomMargin < MARKER_MARGIN && bp > 0) {
+                    while (markerBottomMargin < MARKER_MARGIN && bp > 0) {
                         lastMarker.showMarker = false;
                         bp--;
                         lastMarker = prevLabel.markers[bp];
@@ -275,6 +331,11 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         }
     }
 
+    private measureTooltipSize() {
+        let baseSize = parseFloat(window.getComputedStyle(document.body).getPropertyValue('font-size').match(/(\d+(?:\.\d+)?)/)[1]);
+        this._toolTipHeight = baseSize * 2; // 2rem
+    }
+
     /**
      * Once we have labelList ready. we need to measure the meter height and width. then if height is available. we need to decide
      * which label and marker should be show depending on their height and our rule.
@@ -283,6 +344,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         if (!this.labelList || this._isInMeasure) {
             return;
         }
+        this.measureTooltipSize();
         this._isInMeasure = true;
         let computedFontSize = parseFloat(window.getComputedStyle(this.meter.nativeElement).getPropertyValue('font-size').match(/(\d+(?:\.\d+)?)px/)[1]);
         let rect = this.meter.nativeElement.getBoundingClientRect();
@@ -294,7 +356,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         let lp = 0, rp = this.labelList.length - 2;
         let heightFromTop = 0, heightFromBottom = 0;
         console.log(computedFontSize + LABEL_MARGIN);
-        while(lp < rp) {
+        while (lp < rp) {
             heightFromTop += this.labelList[lp].totalHeightPercent * this._meterHeight;
             // console.log(heightFromTop);
             if (heightFromTop < (computedFontSize + LABEL_MARGIN)) {
@@ -386,7 +448,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         this._isBuilding = false;
     }
 
-    private isInSameSpan(date1, date2, span): {same: boolean, parentSame: boolean} {
+    private isInSameSpan(date1, date2, span): { same: boolean, parentSame: boolean } {
         let sameHours = date1.getHours() === date2.getHours();
         let sameDay = date1.getDay() === date2.getDay();
         let sameMonth = date1.getMonth() === date2.getMonth();
@@ -449,6 +511,17 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         }
     }
 
+    private getTooltipLabel(date: Date) {
+        switch (this.markSpan) {
+            case 'month':
+                return date.getFullYear() + '-' + (date.getMonth() + 1);
+            case 'day':
+                return (date.getMonth() + 1) + '-' + (date.getDay() + 1);
+            case 'hour':
+                return (date.getDay() + 1) + ' ' + date.getHours() + ':00';
+        }
+    }
+
     /**
      * This method is called every time a user click or move on this meter.
      * A popover should be shown contain current pointed item date (up to marker span accuracy).
@@ -462,22 +535,44 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         let scrollYPercentage = pos / this._meterHeight;
         // let content component know
         this._scrollPosition.next(scrollYPercentage);
+    }
+
+    /**
+     * update pointedItem
+     * @param pos
+     */
+    private updatePointedItem(pos: number) {
+        let y = pos / this._meterHeight;
         let heightFromTop = 0;
-        let pointedItem = null;
-        if (scrollYPercentage === 0) {
-            pointedItem = this._itemList[0];
+        let pointedIndex = -1;
+        if (y === 0) {
+            pointedIndex = 0;
         } else {
-            for(let i = 0; i < this._itemList.length; i++) {
+            for (let i = 0; i < this._itemList.length; i++) {
                 let item = this._itemList[i];
-                if (heightFromTop > scrollYPercentage && i > 0) {
-                    pointedItem = this._itemList[i - 1];
+                if (heightFromTop > y && i > 0) {
+                    pointedIndex = i - 1;
+                    break;
                 }
                 heightFromTop += item.rowHeightPercent;
             }
         }
-        if (!pointedItem) {
-            pointedItem = this._itemList[this._itemList.length - 1];
+        if (pointedIndex === -1) {
+            pointedIndex = this._itemList.length - 1;
         }
-        // TODO: show item
+        if (!this.pointedItem || this.pointedItem.date.valueOf() !== this._itemList[pointedIndex].date.valueOf()) {
+            this.pointedItem = Object.assign({}, this._itemList[pointedIndex]);
+            this.pointedItem.label = this.getTooltipLabel(this.pointedItem.date);
+        }
+        if (this.pointedItem) {
+            if (this._toolTipHeight && pos < this._toolTipHeight / 2) {
+                this.pointedItem.pos = `translate3d(-100%, 0, 0)`;
+            } else if (this._toolTipHeight && this._meterHeight - pos < this._toolTipHeight / 2) {
+                console.log(this._meterHeight - this._toolTipHeight);
+                this.pointedItem.pos = `translate3d(-100%, ${this._meterHeight - this._toolTipHeight}px, 0)`;
+            } else {
+                this.pointedItem.pos = `translate3d(-100%, ${pos - this._toolTipHeight / 2}px, 0)`;
+            }
+        }
     }
 }
