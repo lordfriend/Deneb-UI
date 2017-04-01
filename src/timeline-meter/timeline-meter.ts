@@ -463,7 +463,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
             return;
         }
         this._isBuilding = true;
-        performance.mark('start_building');
+        // performance.mark('start_building');
         if (rowHeight && timestampList) {
             this._itemList = [];
             this._itemList = timestampList.map((timestamp) => {
@@ -510,10 +510,10 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
             }
         }
         this.measure();
-        performance.mark('end_building');
-        performance.measure('building_performance', 'start_building', 'end_building');
-        console.log(window.performance.getEntriesByType('measure'));
-        performance.clearMarks();
+        // performance.mark('end_building');
+        // performance.measure('building_performance', 'start_building', 'end_building');
+        // console.log(window.performance.getEntriesByType('measure'));
+        // performance.clearMarks();
         this._isBuilding = false;
     }
 
