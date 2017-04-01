@@ -1,7 +1,7 @@
 import {Component, Input, Output, EventEmitter} from '@angular/core';
 
 
-interface PageNumber {
+export interface PageNumber {
     number: number,
     text: string,
     active: boolean
