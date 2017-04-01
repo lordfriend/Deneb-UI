@@ -238,7 +238,7 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit, OnDestroy {
             ));
         this._subscription.add(this._infiniteList.sizeChange.subscribe(
             ([width, height]) => {
-                console.log('sizeChange: ', width, height);
+                // console.log('sizeChange: ', width, height);
                 this._containerWidth = width;
                 this._containerHeight = height;
                 this.requestMeasure();
@@ -263,7 +263,7 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit, OnDestroy {
     }
 
     private requestLayout() {
-        console.log('requestLayout', this._infiniteList.rowHeight, this._containerHeight, this._collection.length);
+        // console.log('requestLayout', this._infiniteList.rowHeight, this._containerHeight, this._collection.length);
         if (!this._isInMeasure && this._infiniteList.rowHeight) {
             this.layout();
         }
@@ -286,7 +286,7 @@ export class InfiniteForOf implements OnChanges, DoCheck, OnInit, OnDestroy {
         if (this._isInLayout || !this._collection || this._collection.length === 0) {
             return;
         }
-        console.log('on layout');
+        // console.log('on layout');
         this._isInLayout = true;
         let {width, height} = this._infiniteList.measure();
         this._containerWidth = width;

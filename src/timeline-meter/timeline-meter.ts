@@ -41,7 +41,7 @@ export const MARKER_MARGIN = 8;
  * Minimum speed to show tooltip when scroll
  * @type {number} unit is rows/sec
  */
-export const MIN_VELOCITY = 2;
+export const MIN_VELOCITY = 4;
 
 export const TOOLTIP_FADE_TIME = 800;
 
@@ -137,8 +137,8 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
      */
     setScrollY(scrollPercentage: number) {
         let scrollY = scrollPercentage * this.availableHeight;
-        this.updatePointedItem(scrollY);
-        this.floatMarkPos = `translate3d(0, ${scrollY}px, 0)`;
+        this.updatePointedItem(scrollPercentage);
+        this.updateCursorPosition(scrollY + this.toolTipHeight / 2);
         this._onContentScroll.next(scrollPercentage);
     }
 
@@ -221,8 +221,8 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                     (viewportOffsetY: number) => {
                         let rect = this.renderWrapper.nativeElement.getBoundingClientRect();
                         let scrollY = Math.max(Math.min(viewportOffsetY - rect.top, rect.height), 0);
-                        this.updatePointedItem(scrollY + this.toolTipHeight / 2);
-                        this.floatMarkPos = `translate3d(0, ${scrollY + this.toolTipHeight / 2}px, 0)`;
+                        this.updatePointedItem(scrollY / this.availableHeight);
+                        this.updateCursorPosition(scrollY + this.toolTipHeight / 2);
                         this.scrollTo(scrollY);
                     }
                 )
@@ -256,15 +256,16 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                 .subscribe(
                     (event: MouseEvent) => {
                         let meterRect = meterEl.getBoundingClientRect();
+                        let wrapperRect = renderWrapper.getBoundingClientRect();
                         if (event.clientY < meterRect.top || event.clientY > meterRect.bottom || event.clientX < meterRect.left || event.clientX > meterRect.right) {
                             this.showTooltip = false;
                             return;
                         } else {
                             this.showTooltip = true;
                         }
-                        let scrollY = Math.max(this.toolTipHeight / 2, Math.min(event.clientY - meterRect.top, this.availableHeight + this.toolTipHeight / 2));
-                        this.updatePointedItem(scrollY);
-                        this.floatMarkPos = `translate3d(0, ${scrollY}px, 0)`;
+                        let scrollY = Math.max(0, Math.min(event.clientY - wrapperRect.top, this.availableHeight));
+                        this.updatePointedItem(scrollY / this.availableHeight);
+                        this.updateCursorPosition(scrollY + this.toolTipHeight / 2);
                     }
                 )
         );
@@ -286,7 +287,6 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                     return velocity;
                 })
                 .do((velocity: number) => {
-                    console.log(velocity);
                     if (velocity > MIN_VELOCITY) {
                         this.showTooltip = true;
                     }
@@ -608,18 +608,17 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
 
     /**
      * update pointedItem
-     * @param pos
+     * @param percentage
      */
-    private updatePointedItem(pos: number) {
-        let y = pos / this.availableHeight;
+    private updatePointedItem(percentage: number) {
         let heightFromTop = 0;
         let pointedIndex = -1;
-        if (y === 0) {
+        if (percentage === 0) {
             pointedIndex = 0;
         } else {
             for (let i = 0; i < this._itemList.length; i++) {
                 let item = this._itemList[i];
-                if (heightFromTop > y && i > 0) {
+                if (heightFromTop > percentage && i > 0) {
                     pointedIndex = i - 1;
                     break;
                 }
@@ -633,8 +632,12 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
             this.pointedItem = Object.assign({}, this._itemList[pointedIndex]);
             this.pointedItem.label = this.getTooltipLabel(this.pointedItem.date);
         }
+    }
+
+    private updateCursorPosition(pos: number) {
         if (this.pointedItem) {
             this.pointedItem.pos = `translate3d(-100%, ${pos - this.toolTipHeight / 2}px, 0)`;
         }
+        this.floatMarkPos = `translate3d(0, ${pos}px, 0)`;
     }
 }
