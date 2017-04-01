@@ -23,24 +23,28 @@
     -ms-user-select: none;
     user-select: none;
     cursor: row-resize;
-    .render-entity {
+    .render-wrapper {
       position: absolute;
-      right: 0.4rem;
       width: 100%;
-      .label {
+      .render-entity {
         position: absolute;
-        top: 0;
-        right: 0;
-        line-height: 1;
-      }
-      .marker {
-        position: absolute;
-        display: block;
-        width: @marker-width;
-        height: 2px;
-        background-color: rgba(0, 0, 0, 0.4);
-        top: 0;
-        right: 0;
+        right: 0.4rem;
+        width: 100%;
+        .label {
+          position: absolute;
+          top: 0;
+          right: 0;
+          line-height: 1;
+        }
+        .marker {
+          position: absolute;
+          display: block;
+          width: @marker-width;
+          height: 2px;
+          background-color: rgba(0, 0, 0, 0.4);
+          top: 0;
+          right: 0;
+        }
       }
     }
     .meter-tooltip {

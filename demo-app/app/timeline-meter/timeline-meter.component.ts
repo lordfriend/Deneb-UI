@@ -6,7 +6,7 @@ import {Component, OnInit} from '@angular/core';
         `
             ui-timeline-meter {
                 display: block;
-                width: 500px;
+                width: 200px;
                 height: 300px;
             }
             .demo-card {

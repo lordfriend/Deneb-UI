@@ -1,7 +1,4 @@
-import {
-    Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, Input, Optional, SkipSelf,
-    OnChanges, SimpleChanges
-} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, Input, OnDestroy, Optional, ViewChild} from '@angular/core';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {UITimeLineMeter} from '../timeline-meter/timeline-meter';
 
@@ -110,7 +107,7 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
             .subscribe((scrollY: number) => {
                 // console.log('on scroll ', scrollY);
                 if (this._timelineMeter) {
-                    this._timelineMeter.setScrollY(scrollY);
+                    this._timelineMeter.setScrollY(scrollY / (this.holderHeight - this._containerHeight));
                 }
                 this._scrollPosition.next(scrollY);
             }));
@@ -130,6 +127,35 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
                     }
                 }
             ));
+
+        if (this._timelineMeter) {
+            this._subscription.add(this._timelineMeter.scrollPosition
+                .map((scrollPercentage: number) => {
+                    return scrollPercentage * (this.holderHeight - this._containerHeight);
+                })
+                .filter((scrollY: number) => {
+                    return scrollY >= 0 && scrollY <= (this.holderHeight - this._containerHeight);
+                })
+                .do(
+                    (scrollY: number) => {
+                        this.listContainer.nativeElement.scrollTop = scrollY;
+                        this._scrollPosition.next(scrollY);
+                        if (this.currentScrollState === SCROLL_STATE.IDLE) {
+                            this.currentScrollState = SCROLL_STATE.SCROLLING;
+                            this._scrollStateChange.next(this.currentScrollState);
+                        }
+                    }
+                )
+                .debounceTime(SCROLL_STOP_TIME_THRESHOLD)
+                .subscribe(
+                    () => {
+                        if (this.currentScrollState === SCROLL_STATE.SCROLLING) {
+                            this.currentScrollState = SCROLL_STATE.IDLE;
+                            this._scrollStateChange.next(this.currentScrollState);
+                        }
+                    }
+                ));
+        }
         setTimeout(() => {
             let {width, height} = this.measure();
             this._sizeChange.next([width, height]);

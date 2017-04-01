@@ -35,7 +35,15 @@ export class RenderEntity {
 }
 
 export const LABEL_MARGIN = 15;
+
 export const MARKER_MARGIN = 8;
+/**
+ * Minimum speed to show tooltip when scroll
+ * @type {number} unit is rows/sec
+ */
+export const MIN_VELOCITY = 2;
+
+export const TOOLTIP_FADE_TIME = 800;
 
 @Component({
     selector: 'ui-timeline-meter',
@@ -47,16 +55,21 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
     private _subscription = new Subscription();
 
     private _scrollPosition = new BehaviorSubject<number>(0);
+    private _onContentScroll = new BehaviorSubject<number>(-1);
 
     private _itemList: RowItem[];
 
     private _meterWidth: number;
     private _meterHeight: number;
+    private _contentTotalHeight: number;
 
     private _isBuilding: boolean;
     private _isInMeasure: boolean;
 
-    private _toolTipHeight: number;
+    // availableHeight is _meterHeight - toolTipHeight
+    availableHeight: number;
+
+    toolTipHeight: number;
 
     labelList: Label[];
     /**
@@ -71,6 +84,8 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
     pointedItem: RowItem;
 
     @ViewChild('meter') meter: ElementRef;
+    @ViewChild('container') container: ElementRef;
+    @ViewChild('renderWrapper') renderWrapper: ElementRef;
 
     @Input()
     timestampList: number[];
@@ -104,10 +119,10 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
     rowHeight: number;
 
     set rowHeightList(list: number[]) {
-        let totalHeight = list.reduce((prev, curr) => prev + curr, 0);
+        this._contentTotalHeight = list.reduce((prev, curr) => prev + curr, 0);
         this._itemList = list.map((rowHeight, index) => {
             let item = new RowItem();
-            item.rowHeightPercent = rowHeight / totalHeight;
+            item.rowHeightPercent = rowHeight / this._contentTotalHeight;
             if (this.timestampList && this.timestampList[index]) {
                 item.date = new Date(this.timestampList[index]);
             }
@@ -118,10 +133,13 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
 
     /**
      * This method is called by content component to update its
-     * @param scrollY
+     * @param scrollPercentage should be percentage digital of scroll y position
      */
-    setScrollY(scrollY: number) {
-
+    setScrollY(scrollPercentage: number) {
+        let scrollY = scrollPercentage * this.availableHeight;
+        this.updatePointedItem(scrollY);
+        this.floatMarkPos = `translate3d(0, ${scrollY}px, 0)`;
+        this._onContentScroll.next(scrollPercentage);
     }
 
     /**
@@ -135,23 +153,40 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
 
     ngAfterViewInit(): void {
         let meterEl = this.meter.nativeElement;
+        let container = this.container.nativeElement;
+        let renderWrapper = this.renderWrapper.nativeElement;
         // for mouse event
         this._subscription.add(
             Observable.fromEvent(meterEl, 'mousedown')
                 .flatMap(() => {
+                    console.log('mouse down');
                     return Observable.fromEvent(meterEl, 'mousemove')
                         .takeUntil(Observable.fromEvent(meterEl, 'mouseup'));
                 })
                 .map((event: MouseEvent) => {
-                    return event.clientY;
+                    return Math.max(0, Math.min(event.clientY - renderWrapper.getBoundingClientRect().top, this.availableHeight));
                 })
                 .subscribe((pos: number) => {
                     this.scrollTo(pos);
                 })
         );
+
+        // for click
+        this._subscription.add(
+            Observable.fromEvent(meterEl, 'click')
+                .map((event: MouseEvent) => {
+                    return Math.max(0, Math.min(event.clientY - renderWrapper.getBoundingClientRect().top, this.availableHeight));
+                })
+                .subscribe(
+                    (pos: number) => {
+                        this.scrollTo(pos);
+                    }
+                )
+        );
+
         // for touch event
         this._subscription.add(
-            Observable.fromEvent(meterEl, 'touchstart')
+            Observable.fromEvent(renderWrapper, 'touchstart')
                 .do(() => {
                     this.showTooltip = true;
                 })
@@ -160,21 +195,23 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                     return event.touches[0].clientY;
                 })
                 .flatMap(() => {
-                    return Observable.fromEvent(meterEl, 'touchmove')
+                    return Observable.fromEvent(renderWrapper, 'touchmove')
                         .map((event: TouchEvent) => {
                             event.preventDefault();
                             return event.touches[0].clientY;
                         })
                         .takeUntil(
-                            Observable.fromEvent(meterEl, 'touchend')
+                            Observable.fromEvent(renderWrapper, 'touchend')
                                 .map((event: TouchEvent) => {
                                     event.preventDefault();
                                     return event.changedTouches[0].clientY;
                                 })
                         )
                         .do(
-                            () => {},
-                            () => {},
+                            () => {
+                            },
+                            () => {
+                            },
                             () => {
                                 this.showTooltip = false;
                             }
@@ -182,10 +219,10 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                 })
                 .subscribe(
                     (viewportOffsetY: number) => {
-                        let rect = this.meter.nativeElement.getBoundingClientRect();
+                        let rect = this.renderWrapper.nativeElement.getBoundingClientRect();
                         let scrollY = Math.max(Math.min(viewportOffsetY - rect.top, rect.height), 0);
-                        this.updatePointedItem(scrollY);
-                        this.floatMarkPos = `translate3d(0, ${scrollY}px, 0)`;
+                        this.updatePointedItem(scrollY + this.toolTipHeight / 2);
+                        this.floatMarkPos = `translate3d(0, ${scrollY + this.toolTipHeight / 2}px, 0)`;
                         this.scrollTo(scrollY);
                     }
                 )
@@ -202,36 +239,66 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         }
 
         this._subscription.add(
-            Observable.fromEvent(meterEl, 'mouseenter')
-                .do(() => {
-                    this.showTooltip = true;
-                })
+            Observable.fromEvent(container, 'mouseenter')
                 .flatMap(() => {
-                    return Observable.fromEvent(meterEl, 'mousemove')
-                        .takeUntil(Observable.fromEvent(meterEl, 'mouseleave'))
+                    return Observable.fromEvent(container, 'mousemove')
+                        .takeUntil(Observable.fromEvent(container, 'mouseleave'))
                         .do(
-                            (event: MouseEvent) => {
-                                // sometimes mouseleave isn't fired as expected. this may be some bug.
-                                // so we need to check manually
-                                if (event.clientY > this._meterHeight) {
-                                    this.showTooltip = false;
-                                }
-                            },
-                            () => {},
                             () => {
-                                console.log('leave');
+                            },
+                            () => {
+                            },
+                            () => {
                                 this.showTooltip = false;
                             }
                         );
                 })
                 .subscribe(
                     (event: MouseEvent) => {
-                        let scrollY = event.clientY;
+                        let meterRect = meterEl.getBoundingClientRect();
+                        if (event.clientY < meterRect.top || event.clientY > meterRect.bottom || event.clientX < meterRect.left || event.clientX > meterRect.right) {
+                            this.showTooltip = false;
+                            return;
+                        } else {
+                            this.showTooltip = true;
+                        }
+                        let scrollY = Math.max(this.toolTipHeight / 2, Math.min(event.clientY - meterRect.top, this.availableHeight + this.toolTipHeight / 2));
                         this.updatePointedItem(scrollY);
                         this.floatMarkPos = `translate3d(0, ${scrollY}px, 0)`;
                     }
                 )
         );
+        let lastScrollTime = 0;
+        let lastScrollPos = 0;
+        this._subscription.add(
+            this._onContentScroll
+                .filter((scrollPercentage: number) => scrollPercentage !== -1)
+                .map((scrollPercentage: number) => {
+                    let currentTime = performance.now();
+                    let velocity = 0;
+                    let averageRowHeight = this._contentTotalHeight / this._itemList.length;
+                    if (lastScrollTime) {
+                        // unit is rows/sec
+                        velocity = Math.abs((scrollPercentage - lastScrollPos) * this._contentTotalHeight) / averageRowHeight / ((currentTime - lastScrollTime) / 1000);
+                    }
+                    lastScrollTime = currentTime;
+                    lastScrollPos = scrollPercentage;
+                    return velocity;
+                })
+                .do((velocity: number) => {
+                    console.log(velocity);
+                    if (velocity > MIN_VELOCITY) {
+                        this.showTooltip = true;
+                    }
+                })
+                .debounceTime(TOOLTIP_FADE_TIME)
+                .subscribe(
+                    () => {
+                        if (this.showTooltip) {
+                            this.showTooltip = false;
+                        }
+                    }
+                ));
 
         // measure once view is ready
         setTimeout(() => {
@@ -309,12 +376,12 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                     prevLabel = this.labelList[i - 1];
                     bp = prevLabel.markers.length - 1;
                     lastMarker = prevLabel.markers[bp];
-                    markerBottomMargin = lastMarker.totalHeightPercent * this._meterHeight;
+                    markerBottomMargin = lastMarker.totalHeightPercent * this.availableHeight;
                     while (markerBottomMargin < MARKER_MARGIN && bp > 0) {
                         lastMarker.showMarker = false;
                         bp--;
                         lastMarker = prevLabel.markers[bp];
-                        markerBottomMargin += lastMarker.totalHeightPercent * this._meterHeight;
+                        markerBottomMargin += lastMarker.totalHeightPercent * this.availableHeight;
                     }
                 }
                 markerTopMargin -= computedFontSize + MARKER_MARGIN;
@@ -323,9 +390,9 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                 let marker = label.markers[j];
                 if (markerTopMargin > MARKER_MARGIN) {
                     marker.showMarker = true;
-                    markerTopMargin = marker.totalHeightPercent * this._meterHeight;
+                    markerTopMargin = marker.totalHeightPercent * this.availableHeight;
                 } else {
-                    markerTopMargin += marker.totalHeightPercent * this._meterHeight;
+                    markerTopMargin += marker.totalHeightPercent * this.availableHeight;
                 }
             }
         }
@@ -333,7 +400,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
 
     private measureTooltipSize() {
         let baseSize = parseFloat(window.getComputedStyle(document.body).getPropertyValue('font-size').match(/(\d+(?:\.\d+)?)/)[1]);
-        this._toolTipHeight = baseSize * 2; // 2rem
+        this.toolTipHeight = baseSize * 2; // 2rem
     }
 
     /**
@@ -350,6 +417,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         let rect = this.meter.nativeElement.getBoundingClientRect();
         this._meterWidth = rect.width;
         this._meterHeight = rect.height;
+        this.availableHeight = this._meterHeight - this.toolTipHeight;
         if (!this._meterWidth || !this._meterHeight) {
             return;
         }
@@ -357,7 +425,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         let heightFromTop = 0, heightFromBottom = 0;
         console.log(computedFontSize + LABEL_MARGIN);
         while (lp < rp) {
-            heightFromTop += this.labelList[lp].totalHeightPercent * this._meterHeight;
+            heightFromTop += this.labelList[lp].totalHeightPercent * this.availableHeight;
             // console.log(heightFromTop);
             if (heightFromTop < (computedFontSize + LABEL_MARGIN)) {
                 this.labelList[++lp].showLabel = false;
@@ -366,7 +434,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                 // this.marker[++lp].showLabel = true;
                 heightFromTop = 0;
             }
-            heightFromBottom += this.labelList[rp].totalHeightPercent * this._meterHeight;
+            heightFromBottom += this.labelList[rp].totalHeightPercent * this.availableHeight;
             if (heightFromBottom < (computedFontSize + LABEL_MARGIN)) {
                 this.labelList[rp--].showLabel = false;
             } else {
@@ -404,6 +472,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                 item.rowHeightPercent = 1 / timestampList.length;
                 return item;
             });
+            this._contentTotalHeight = rowHeight * timestampList.length;
         }
         if (!this._itemList || this._itemList.length === 0) {
             return;
@@ -529,10 +598,10 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
      * @param pos
      */
     private scrollTo(pos: number) {
-        if (!this._meterHeight || !this._itemList) {
+        if (!this.availableHeight || !this._itemList) {
             return;
         }
-        let scrollYPercentage = pos / this._meterHeight;
+        let scrollYPercentage = pos / this.availableHeight;
         // let content component know
         this._scrollPosition.next(scrollYPercentage);
     }
@@ -542,7 +611,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
      * @param pos
      */
     private updatePointedItem(pos: number) {
-        let y = pos / this._meterHeight;
+        let y = pos / this.availableHeight;
         let heightFromTop = 0;
         let pointedIndex = -1;
         if (y === 0) {
@@ -565,14 +634,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
             this.pointedItem.label = this.getTooltipLabel(this.pointedItem.date);
         }
         if (this.pointedItem) {
-            if (this._toolTipHeight && pos < this._toolTipHeight / 2) {
-                this.pointedItem.pos = `translate3d(-100%, 0, 0)`;
-            } else if (this._toolTipHeight && this._meterHeight - pos < this._toolTipHeight / 2) {
-                console.log(this._meterHeight - this._toolTipHeight);
-                this.pointedItem.pos = `translate3d(-100%, ${this._meterHeight - this._toolTipHeight}px, 0)`;
-            } else {
-                this.pointedItem.pos = `translate3d(-100%, ${pos - this._toolTipHeight / 2}px, 0)`;
-            }
+            this.pointedItem.pos = `translate3d(-100%, ${pos - this.toolTipHeight / 2}px, 0)`;
         }
     }
 }
