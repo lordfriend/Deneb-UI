@@ -12,3 +12,4 @@ Current implemented component:
 - Toast
 - Pagination
 - InfiniteList
+- TimelineMeter
