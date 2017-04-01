@@ -6,26 +6,8 @@ export const SCROLL_STOP_TIME_THRESHOLD = 200; // in milliseconds
 
 @Component({
     selector: 'infinite-list',
-    template: `
-        <div class="infinite-list" #listContainer>
-            <div class="infinite-list-holder" [style.height]="holderHeightInPx">
-                <ng-content></ng-content>
-            </div>
-        </div>`,
-    styles: [`
-        .infinite-list {
-            overflow-y: auto;
-            overflow-x: hidden;
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-
-        .infinite-list-holder {
-            width: 100%;
-            position: relative;
-        }
-    `]
+    templateUrl: 'infinite-list.html',
+    styleUrls: ['infinite-list.less']
 })
 export class InfiniteList implements AfterViewInit, OnDestroy {
     private _holderHeight: number;
@@ -41,6 +23,9 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
     currentScrollState: SCROLL_STATE = SCROLL_STATE.IDLE;
 
     @ViewChild('listContainer') listContainer: ElementRef;
+
+    scrollbarStyle: string;
+    scrollbarWidth: number;
 
     set holderHeight(height: number) {
         if (height) {
@@ -90,9 +75,16 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
      * @param _timelineMeter
      */
     constructor(@Optional() private _timelineMeter: UITimeLineMeter) {
+        this.scrollbarStyle = !!this._timelineMeter ? 'hide-scrollbar' : 'normal';
+        this.scrollbarWidth = getScrollBarWidth();
     }
 
     ngAfterViewInit(): void {
+        if (this.scrollbarStyle === 'hide-scrollbar') {
+            this.listContainer.nativeElement.style.right =  (0 - this.scrollbarWidth)+ 'px';
+            this.listContainer.nativeElement.style.paddingRight = this.scrollbarWidth + 'px';
+        }
+
         if (window) {
             this._subscription.add(Observable.fromEvent(window, 'resize')
                 .subscribe(() => {
@@ -171,7 +163,7 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
             // let measuredWidth = this.listContainer.nativeElement.clientWidth;
             // let measuredHeight = this.listContainer.nativeElement.clientHeight;
             let rect = this.listContainer.nativeElement.getBoundingClientRect();
-            this._containerWidth = rect.width;
+            this._containerWidth = rect.width - this.scrollbarWidth;
             this._containerHeight = rect.height;
             return {width: this._containerWidth, height: this._containerHeight};
         }
@@ -182,4 +174,33 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
 export enum SCROLL_STATE {
     SCROLLING,
     IDLE
+}
+
+export function getScrollBarWidth() {
+    var inner = document.createElement('p');
+    inner.style.width = "100%";
+    inner.style.height = "200px";
+
+    var outer = document.createElement('div');
+    outer.style.position = "absolute";
+    outer.style.top = "0px";
+    outer.style.left = "0px";
+    outer.style.visibility = "hidden";
+    outer.style.width = "200px";
+    outer.style.height = "150px";
+    outer.style.overflow = "hidden";
+    outer.appendChild(inner);
+
+    document.body.appendChild(outer);
+    var w1 = inner.offsetWidth;
+    outer.style.overflow = 'scroll';
+    var w2 = inner.offsetWidth;
+
+    if (w1 == w2) {
+        w2 = outer.clientWidth;
+    }
+
+    document.body.removeChild(outer);
+
+    return (w1 - w2);
 }

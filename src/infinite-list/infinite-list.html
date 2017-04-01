@@ -1,0 +1,6 @@
+<div class="infinite-list" #listContainer
+     [ngClass]="scrollbarStyle">
+    <div class="infinite-list-holder" [style.height]="holderHeightInPx">
+        <ng-content></ng-content>
+    </div>
+</div>
