@@ -15,7 +15,7 @@ module.exports = {
             helpers.root('node_modules')
         ]
     },
-    devtool: 'inline-source-map',
+    devtool: 'source-map',
     output: {
         path: helpers.root('dist'),
         filename: '[name].js',

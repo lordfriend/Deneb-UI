@@ -110,13 +110,12 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
     showMarker: boolean = true;
 
     /**
-     * if _rowHeight is set, meter will use this height for all rows.
+     * if rowHeight is set, meter will use this height for all rows.
      * mark on meter will be evenly placed.
      * If you use InfiniteList as content, row height must be set.
      */
-    @Optional()
     @Input()
-    rowHeight: number;
+    rowHeight: number = 0;
 
     set rowHeightList(list: number[]) {
         this._contentTotalHeight = list.reduce((prev, curr) => prev + curr, 0);
@@ -159,7 +158,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         this._subscription.add(
             Observable.fromEvent(meterEl, 'mousedown')
                 .flatMap(() => {
-                    console.log('mouse down');
+                    // console.log('mouse down');
                     return Observable.fromEvent(meterEl, 'mousemove')
                         .takeUntil(Observable.fromEvent(meterEl, 'mouseup'));
                 })
@@ -423,7 +422,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         }
         let lp = 0, rp = this.labelList.length - 2;
         let heightFromTop = 0, heightFromBottom = 0;
-        console.log(computedFontSize + LABEL_MARGIN);
+        // console.log(computedFontSize + LABEL_MARGIN);
         while (lp < rp) {
             heightFromTop += this.labelList[lp].totalHeightPercent * this.availableHeight;
             // console.log(heightFromTop);

@@ -108,7 +108,7 @@ export class UIPagination {
     }
 
     private updatePageNumberList(): PageNumber[] {
-        console.log('rebuild pages');
+        // console.log('rebuild pages');
         let maxSize = this._max;
         let currentPage = this.currentPage;
         this.totalPages = Math.ceil(this._total / this._countPerPage);

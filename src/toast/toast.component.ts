@@ -1,7 +1,13 @@
 import {
-    Component, Input, trigger, state, style, transition, animate, ViewEncapsulation,
-    OnDestroy, AnimationTransitionEvent, Output, EventEmitter
+    AnimationTransitionEvent,
+    Component,
+    EventEmitter,
+    Input,
+    OnDestroy,
+    Output,
+    ViewEncapsulation
 } from '@angular/core';
+import {animate, state, style, transition, trigger} from '@angular/animations';
 import {UIToastRef} from './toast-ref';
 import {UIToastAnimation} from './toast-interface';
 
