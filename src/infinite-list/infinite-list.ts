@@ -1,5 +1,6 @@
-import {Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, Input} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, Input, OnDestroy, Optional, ViewChild} from '@angular/core';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
+import {UITimeLineMeter} from '../timeline-meter/timeline-meter';
 
 export const SCROLL_STOP_TIME_THRESHOLD = 200; // in milliseconds
 
@@ -83,6 +84,14 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
 
     @Input() rowHeight: number;
 
+    /**
+     * UITimelineMeter is optional injection. when this component used inside a UITimelineMeter.
+     * it is responsible to update the scrollY
+     * @param _timelineMeter
+     */
+    constructor(@Optional() private _timelineMeter: UITimeLineMeter) {
+    }
+
     ngAfterViewInit(): void {
         if (window) {
             this._subscription.add(Observable.fromEvent(window, 'resize')
@@ -97,6 +106,9 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
             })
             .subscribe((scrollY: number) => {
                 // console.log('on scroll ', scrollY);
+                if (this._timelineMeter) {
+                    this._timelineMeter.setScrollY(scrollY / (this.holderHeight - this._containerHeight));
+                }
                 this._scrollPosition.next(scrollY);
             }));
         this._subscription.add(Observable.fromEvent(this.listContainer.nativeElement, 'scroll')
@@ -115,6 +127,35 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
                     }
                 }
             ));
+
+        if (this._timelineMeter) {
+            this._subscription.add(this._timelineMeter.scrollPosition
+                .map((scrollPercentage: number) => {
+                    return scrollPercentage * (this.holderHeight - this._containerHeight);
+                })
+                .filter((scrollY: number) => {
+                    return scrollY >= 0 && scrollY <= (this.holderHeight - this._containerHeight);
+                })
+                .do(
+                    (scrollY: number) => {
+                        this.listContainer.nativeElement.scrollTop = scrollY;
+                        this._scrollPosition.next(scrollY);
+                        if (this.currentScrollState === SCROLL_STATE.IDLE) {
+                            this.currentScrollState = SCROLL_STATE.SCROLLING;
+                            this._scrollStateChange.next(this.currentScrollState);
+                        }
+                    }
+                )
+                .debounceTime(SCROLL_STOP_TIME_THRESHOLD)
+                .subscribe(
+                    () => {
+                        if (this.currentScrollState === SCROLL_STATE.SCROLLING) {
+                            this.currentScrollState = SCROLL_STATE.IDLE;
+                            this._scrollStateChange.next(this.currentScrollState);
+                        }
+                    }
+                ));
+        }
         setTimeout(() => {
             let {width, height} = this.measure();
             this._sizeChange.next([width, height]);

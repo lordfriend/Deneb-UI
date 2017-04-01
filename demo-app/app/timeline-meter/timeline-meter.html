@@ -1,0 +1,12 @@
+<div class="demo-container">
+    <ui-timeline-meter [timestampList]="timestampList" [rowHeight]="40">
+        <infinite-list [rowHeight]="40">
+            <div *infiniteFor="let row of cards" class="demo-card">
+                {{row}}
+            </div>
+        </infinite-list>
+    </ui-timeline-meter>
+    <!--<ui-timeline-meter [timestampList]="">-->
+        <!--<scrollable-content></scrollable-content>-->
+    <!--</ui-timeline-meter>-->
+</div>

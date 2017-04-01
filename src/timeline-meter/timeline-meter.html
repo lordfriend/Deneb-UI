@@ -1,0 +1,22 @@
+<div class="ui-timeline-meter-container" #container>
+    <div class="scrollable-content-wrapper">
+        <ng-content></ng-content>
+    </div>
+    <div class="ui-timeline-meter" #meter [ngClass]="labelSpan">
+        <div class="render-wrapper"
+             [style.top]="toolTipHeight / 2 + 'px'"
+             [style.height]="availableHeight + 'px'" #renderWrapper>
+            <div class="render-entity" *ngFor="let renderEntity of renderEntityList" [style.top]="renderEntity.top">
+                <div class="label" *ngIf="renderEntity.isLabel">{{renderEntity.label}}</div>
+                <div class="marker" *ngIf="!renderEntity.isLabel"></div>
+            </div>
+        </div>
+        <div *ngIf="showTooltip"
+             class="meter-tooltip"
+             [ngClass]="markSpan"
+             [style.transform]="pointedItem?.pos">{{pointedItem?.label}}</div>
+        <div *ngIf="showTooltip"
+             class="float-mark"
+             [style.transform]="floatMarkPos"></div>
+    </div>
+</div>

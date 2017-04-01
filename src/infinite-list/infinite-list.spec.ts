@@ -1,17 +1,19 @@
 import {InfiniteList} from './infinite-list';
 import {async, ComponentFixture, fakeAsync, TestBed, tick} from '@angular/core/testing';
-import {Component, DebugElement} from '@angular/core';
+import {Component} from '@angular/core';
 import {UIInfiniteListModule} from './index';
 import {By} from '@angular/platform-browser';
-import {last} from 'rxjs/operator/last';
-import {first} from 'rxjs/operator/first';
 describe('InfiniteList', () => {
     const rowHeight = 40;
     let fixture: ComponentFixture<any>;
 
-    function getComponent(): TestComponent { return fixture.componentInstance; }
+    function getComponent(): TestComponent {
+        return fixture.componentInstance;
+    }
 
-    afterEach(() => { fixture = null; });
+    afterEach(() => {
+        fixture = null;
+    });
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
@@ -30,7 +32,7 @@ describe('InfiniteList', () => {
             let rowElements = el.querySelectorAll('.row-element');
             // calculate initial displayed element.
             // let firstPosition = 0;
-            let lastPosition = Math.ceil(300/ rowHeight) + 1;
+            let lastPosition = Math.ceil(300 / rowHeight) + 1;
             expect(rowElements.length).toEqual(lastPosition + 1);
         });
     }));
@@ -78,6 +80,7 @@ describe('InfiniteList', () => {
 })
 class TestComponent {
     collection: any[];
+
     constructor() {
         this.collection = [];
         for (let i = 0; i < 100; i++) {
