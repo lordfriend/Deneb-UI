@@ -19,4 +19,8 @@
              class="float-mark"
              [style.transform]="floatMarkPos"></div>
     </div>
+    <ui-scrollbar
+            [contentHeight]="contentHeight"
+            [scrollPosition]="scrollPercentage"
+            (scrollChange)="onScrollbarChange($event)"></ui-scrollbar>
 </div>

@@ -4,13 +4,15 @@ import {UIToastModule} from './toast/index';
 import {UIPaginationModule} from './pagination/index';
 import {UIInfiniteListModule} from './infinite-list/index';
 import {UITimelineMeterModule} from './timeline-meter/index';
+import {UIScrollbarModule} from './scrollbar/index';
 
 const UI_MODULES = [
     UIDialogModule,
     UIToastModule,
     UIPaginationModule,
     UIInfiniteListModule,
-    UITimelineMeterModule
+    UITimelineMeterModule,
+    UIScrollbarModule
 ];
 
 @NgModule({
@@ -26,3 +28,4 @@ export * from './toast';
 export * from './pagination';
 export * from './infinite-list';
 export * from './timeline-meter';
+export * from './scrollbar';

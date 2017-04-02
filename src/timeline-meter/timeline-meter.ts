@@ -3,7 +3,7 @@ import {
     ViewChild
 } from '@angular/core';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
-
+import {isInRect} from '../core/utils';
 
 export class RowItem {
     // use native Date instead Momentjs to get a good performance
@@ -61,10 +61,15 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
 
     private _meterWidth: number;
     private _meterHeight: number;
-    private _contentTotalHeight: number;
-
     private _isBuilding: boolean;
     private _isInMeasure: boolean;
+
+    scrollPercentage: number;
+
+    /**
+     * the scrollable content height
+     */
+    contentHeight: number;
 
     // availableHeight is _meterHeight - toolTipHeight
     availableHeight: number;
@@ -80,7 +85,6 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
 
     showTooltip: boolean = false;
     floatMarkPos: string;
-
     pointedItem: RowItem;
 
     @ViewChild('meter') meter: ElementRef;
@@ -118,10 +122,10 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
     rowHeight: number = 0;
 
     set rowHeightList(list: number[]) {
-        this._contentTotalHeight = list.reduce((prev, curr) => prev + curr, 0);
+        this.contentHeight = list.reduce((prev, curr) => prev + curr, 0);
         this._itemList = list.map((rowHeight, index) => {
             let item = new RowItem();
-            item.rowHeightPercent = rowHeight / this._contentTotalHeight;
+            item.rowHeightPercent = rowHeight / this.contentHeight;
             if (this.timestampList && this.timestampList[index]) {
                 item.date = new Date(this.timestampList[index]);
             }
@@ -135,12 +139,17 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
      * @param scrollPercentage should be percentage digital of scroll y position
      */
     setScrollY(scrollPercentage: number) {
+        this.scrollPercentage = scrollPercentage;
         let scrollY = scrollPercentage * this.availableHeight;
         this.updatePointedItem(scrollPercentage);
         this.updateCursorPosition(scrollY + this.toolTipHeight / 2);
         this._onContentScroll.next(scrollPercentage);
     }
 
+    onScrollbarChange(scrollPercentage: number) {
+        this.setScrollY(scrollPercentage);
+        this._scrollPosition.next(scrollPercentage);
+    }
     /**
      * scroll position is a percentage float number.
      * content component should calculate actual scrollY multiply its own height
@@ -256,7 +265,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                     (event: MouseEvent) => {
                         let meterRect = meterEl.getBoundingClientRect();
                         let wrapperRect = renderWrapper.getBoundingClientRect();
-                        if (event.clientY < meterRect.top || event.clientY > meterRect.bottom || event.clientX < meterRect.left || event.clientX > meterRect.right) {
+                        if (!isInRect(event.clientX, event.clientY, meterRect)) {
                             this.showTooltip = false;
                             return;
                         } else {
@@ -276,10 +285,10 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                 .map((scrollPercentage: number) => {
                     let currentTime = performance.now();
                     let velocity = 0;
-                    let averageRowHeight = this._contentTotalHeight / this._itemList.length;
+                    let averageRowHeight = this.contentHeight / this._itemList.length;
                     if (lastScrollTime) {
                         // unit is rows/sec
-                        velocity = Math.abs((scrollPercentage - lastScrollPos) * this._contentTotalHeight) / averageRowHeight / ((currentTime - lastScrollTime) / 1000);
+                        velocity = Math.abs((scrollPercentage - lastScrollPos) * this.contentHeight) / averageRowHeight / ((currentTime - lastScrollTime) / 1000);
                     }
                     lastScrollTime = currentTime;
                     lastScrollPos = scrollPercentage;
@@ -471,7 +480,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                 item.rowHeightPercent = 1 / timestampList.length;
                 return item;
             });
-            this._contentTotalHeight = rowHeight * timestampList.length;
+            this.contentHeight = rowHeight * timestampList.length;
         }
         if (!this._itemList || this._itemList.length === 0) {
             return;
@@ -603,6 +612,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         let scrollYPercentage = pos / this.availableHeight;
         // let content component know
         this._scrollPosition.next(scrollYPercentage);
+        this.scrollPercentage = scrollYPercentage;
     }
 
     /**
@@ -640,3 +650,4 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         this.floatMarkPos = `translate3d(0, ${pos}px, 0)`;
     }
 }
+

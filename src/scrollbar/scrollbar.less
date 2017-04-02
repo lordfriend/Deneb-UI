@@ -1,0 +1,27 @@
+@scrollbar-width: 0.8rem;
+.scrollbar {
+  position: absolute;
+  display: block;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: @scrollbar-width;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  cursor: default;
+  .scrollbar-thumb {
+    position: absolute;
+    right: 0;
+    width: @scrollbar-width;
+    -webkit-tap-highlight-color: transparent;
+    background-color: #bdbdbd;
+  }
+  &:hover {
+    background-color: rgba(116, 116, 116, 0.05);
+    .scrollbar-thumb {
+      background-color: #adadad;
+    }
+  }
+}
