@@ -11,4 +11,5 @@ cp README.md ./dist/
 
 echo 'publish...'
 # publish
+cd ./dist
 npm publish --access public

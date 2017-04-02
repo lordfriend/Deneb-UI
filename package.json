@@ -3,7 +3,7 @@
   "author": "Bob Yuan",
   "description": "UI building blocks for project Deneb",
   "version": "0.1.2",
-  "main": "dist/index.js",
+  "main": "./index.js",
   "repository": "https://github.com/lordfriend/Deneb-UI.git",
   "license": "MIT",
   "keywords": [
