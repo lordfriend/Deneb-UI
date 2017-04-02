@@ -1,3 +1,7 @@
+.idea
+.DS_Store
+npm-debug.log
+
 *.ngFactory.ts
 /aot
 /src

@@ -20,7 +20,7 @@ gulp.task('replace-less-url', function() {
 });
 
 gulp.task('copy-assets', function() {
-    return gulp.src(['src/tsconfig-aot.json', 'src/**/*.less'])
+    return gulp.src(['src/tsconfig-aot.json', 'src/**/*.less', 'src/**/*.html'])
         .pipe(gulp.dest('dist'))
         .pipe(gulp.dest('aot'));
 });
