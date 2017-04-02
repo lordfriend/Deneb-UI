@@ -1,7 +1,22 @@
 {
   "name": "deneb-ui",
   "author": "Bob Yuan",
-  "version": "0.1.0",
+  "description": "UI building blocks for project Deneb",
+  "version": "0.1.1",
+  "main": "dist/index.js",
+  "repository": "https://github.com/lordfriend/Deneb-UI.git",
+  "license": "MIT",
+  "keywords": [
+    "angular",
+    "semantic-ui",
+    "component",
+    "dialog",
+    "modal",
+    "toast",
+    "ListView",
+    "timeline",
+    "pagination"
+  ],
   "scripts": {
     "server:dev": "webpack-dev-server --config webpack.dev.js --progress --profile --watch --content-base .",
     "start": "npm run server:dev",
@@ -9,7 +24,6 @@
     "webpack-dev-server": "webpack-dev-server",
     "webpack": "webpack"
   },
-  "main": "dist/index.js",
   "dependencies": {},
   "devDependencies": {
     "@angular/animations": "^4.0.1",
