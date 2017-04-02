@@ -1,7 +1,7 @@
 {
   "name": "deneb-ui",
   "author": "Bob Yuan",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "scripts": {
     "server:dev": "webpack-dev-server --config webpack.dev.js --progress --profile --watch --content-base .",
     "start": "npm run server:dev",
@@ -9,7 +9,7 @@
     "webpack-dev-server": "webpack-dev-server",
     "webpack": "webpack"
   },
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "dependencies": {},
   "devDependencies": {
     "@angular/animations": "^4.0.1",

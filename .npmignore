@@ -1,2 +1,6 @@
 *.ngFactory.ts
+/aot
 /src
+/site
+/demo-app
+node_modules

@@ -7,3 +7,5 @@ node_modules
 *.metadata.json
 
 src/**/*.js
+
+npm-debug.log
