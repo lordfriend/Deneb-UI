@@ -131,7 +131,9 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
             }
             return item;
         });
-        this.buildMeter(null, this.timestampList);
+        if (this._itemList && this._itemList.length > 0) {
+            this.buildMeter();
+        }
     }
 
     /**
@@ -166,6 +168,9 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         // for mouse event
         this._subscription.add(
             Observable.fromEvent(meterEl, 'mousedown')
+                .filter(() => {
+                    return this.timestampList && this.timestampList.length > 0;
+                })
                 .flatMap(() => {
                     // console.log('mouse down');
                     return Observable.fromEvent(meterEl, 'mousemove')
@@ -182,6 +187,9 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         // for click
         this._subscription.add(
             Observable.fromEvent(meterEl, 'click')
+                .filter(() => {
+                    return this.timestampList && this.timestampList.length > 0;
+                })
                 .map((event: MouseEvent) => {
                     return Math.max(0, Math.min(event.clientY - renderWrapper.getBoundingClientRect().top, this.availableHeight));
                 })
@@ -195,6 +203,9 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         // for touch event
         this._subscription.add(
             Observable.fromEvent(renderWrapper, 'touchstart')
+                .filter(() => {
+                    return this.timestampList && this.timestampList.length > 0;
+                })
                 .do(() => {
                     this.showTooltip = true;
                 })
@@ -248,6 +259,9 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
 
         this._subscription.add(
             Observable.fromEvent(container, 'mouseenter')
+                .filter(() => {
+                    return this.timestampList && this.timestampList.length > 0;
+                })
                 .flatMap(() => {
                     return Observable.fromEvent(container, 'mousemove')
                         .takeUntil(Observable.fromEvent(container, 'mouseleave'))
@@ -281,6 +295,9 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         let lastScrollPos = 0;
         this._subscription.add(
             this._onContentScroll
+                .filter(() => {
+                    return this.timestampList && this.timestampList.length > 0;
+                })
                 .filter((scrollPercentage: number) => scrollPercentage !== -1)
                 .map((scrollPercentage: number) => {
                     let currentTime = performance.now();
@@ -319,7 +336,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if ('timestampList' in changes && !this.rowHeight && this._itemList) {
+        if ('timestampList' in changes && changes['timestampList'].currentValue && !this.rowHeight && this._itemList) {
             let currentTimestampList = changes['timestampList'].currentValue;
             if (currentTimestampList.length === this._itemList.length) {
                 this._itemList.forEach((item, index) => {
@@ -330,7 +347,20 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         if ('timestampList' in changes || 'rowHeight' in changes) {
             let timestampList = 'timestampList' in changes ? changes['timestampList'].currentValue : this.timestampList;
             let rowHeight = 'rowHeight' in changes ? changes['rowHeight'].currentValue : this.rowHeight;
-            this.buildMeter(rowHeight, timestampList);
+            if (rowHeight && timestampList) {
+                this._itemList = [];
+                this._itemList = timestampList.map((timestamp) => {
+                    let item = new RowItem();
+                    item.date = new Date(timestamp);
+                    item.rowHeightPercent = 1 / timestampList.length;
+                    return item;
+                });
+                this.contentHeight = rowHeight * timestampList.length;
+            }
+            if (this._itemList && this._itemList.length > 0) {
+                this.buildMeter();
+            }
+
         }
         if ('showMarker' in changes && !this._isBuilding && !this._isInMeasure) {
             this.makeRenderEntity();
@@ -466,25 +496,12 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
      * @param rowHeight
      * @param timestampList
      */
-    private buildMeter(rowHeight: number, timestampList: number[]) {
+    private buildMeter() {
         if (this._isBuilding) {
             return;
         }
         this._isBuilding = true;
         // performance.mark('start_building');
-        if (rowHeight && timestampList) {
-            this._itemList = [];
-            this._itemList = timestampList.map((timestamp) => {
-                let item = new RowItem();
-                item.date = new Date(timestamp);
-                item.rowHeightPercent = 1 / timestampList.length;
-                return item;
-            });
-            this.contentHeight = rowHeight * timestampList.length;
-        }
-        if (!this._itemList || this._itemList.length === 0) {
-            return;
-        }
         this.labelList = [];
         let lastLabel = new Label();
         this.labelList.push(lastLabel);

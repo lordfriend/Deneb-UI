@@ -21,13 +21,15 @@ export class TimelineMeterExample implements OnInit {
     timestampList: number[];
 
     ngOnInit(): void {
-        let timestamp = Date.now();
-        this.timestampList = [];
-        this.cards = [];
-        for(let i = 0; i < 100; i++) {
-            this.cards.push(i + '');
-            this.timestampList.push(timestamp);
-            timestamp = Math.floor(timestamp - 3600 * 1000 * 24 * 30 * Math.random() * 3);
-        }
+        setTimeout(() => {
+            let timestamp = Date.now();
+            this.timestampList = [];
+            this.cards = [];
+            for(let i = 0; i < 100; i++) {
+                this.cards.push(i + '');
+                this.timestampList.push(timestamp);
+                timestamp = Math.floor(timestamp - 3600 * 1000 * 24 * 30 * Math.random() * 3);
+            }
+        }, 3000);
     }
 }
