@@ -5,6 +5,8 @@ var rimraf = require('rimraf');
 var cleanCss =require('gulp-clean-css');
 var exec = require('child_process').exec;
 var runSequece = require('run-sequence');
+var inlineResources = require('./scripts/inline-resources');
+var path = require('path');
 
 var styleUrlsPattern = /styleUrls:\s*\[\s*'([^\[\]]+?)\.less'\s*]/g;
 
@@ -26,27 +28,32 @@ gulp.task('copy-assets', function() {
 });
 
 gulp.task('less', function () {
-    gulp.src('src/**/*.less')
+    return gulp.src('src/**/*.less')
         .pipe(gulpLess())
         .pipe(cleanCss())
-        .pipe(gulp.dest('aot'));
+        .pipe(gulp.dest('dist'));
 });
 
 gulp.task('compile', function(done) {
     exec('$(npm bin)/ngc -p aot/tsconfig-aot.json', done);
 });
 
+gulp.task('inline-resources', function () {
+    return inlineResources(path.join(__dirname, 'dist'));
+});
+
 gulp.task('cleanup', function() {
     rimraf.sync('aot');
 });
 
-gulp.task('build', function() {
-    runSequece([
+gulp.task('build', function (done) {
+    runSequece(
         'clean',
         'replace-less-url',
         'copy-assets',
         'less',
         'compile',
-        'cleanup'
-    ]);
+        'inline-resources',
+        'cleanup',
+        done);
 });
