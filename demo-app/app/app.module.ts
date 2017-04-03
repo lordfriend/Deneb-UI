@@ -9,6 +9,7 @@ import {PaginationDemo} from './pagination/pagination.component';
 import {InfiniteListDemo} from './infinite-list/infinite-list.component';
 import {ListItemExample} from './infinite-list/list-item/list-item.component';
 import {TimelineMeterExample} from './timeline-meter/timeline-meter.component';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 @NgModule({
     declarations: [
         App,
@@ -20,7 +21,7 @@ import {TimelineMeterExample} from './timeline-meter/timeline-meter.component';
         ListItemExample,
         TimelineMeterExample
     ],
-    imports: [UIModule, BrowserModule],
+    imports: [UIModule, BrowserModule, BrowserAnimationsModule],
     bootstrap: [App],
     entryComponents: [ExampleDialog]
 })

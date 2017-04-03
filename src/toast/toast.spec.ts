@@ -7,6 +7,7 @@ import {UIToastModule} from './index';
 import {UIToastAnimation} from './toast-interface';
 import {UIToast} from './toast';
 import {UIToastRef} from './toast-ref';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
 describe('UIToast', () => {
     let toast: UIToast;
@@ -14,7 +15,7 @@ describe('UIToast', () => {
     let toastRef: UIToastRef<any>;
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            imports: [UIToastModule, ToastTestModule]
+            imports: [BrowserAnimationsModule, UIToastModule, ToastTestModule]
         });
 
         TestBed.compileComponents();
