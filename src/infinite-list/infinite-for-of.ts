@@ -202,7 +202,7 @@ export class InfiniteForOf<T> implements OnChanges, DoCheck, OnInit, OnDestroy {
                 // new item
                 // console.log('new item', item, adjustedPreviousIndex, currentIndex);
                 isMeasurementRequired = true;
-                this._collection[currentIndex] = item.item;
+                this._collection.splice(currentIndex, 0, item.item);
             } else if (currentIndex == null) {
                 // remove item
                 // console.log('remove item', item, adjustedPreviousIndex, currentIndex);
@@ -214,7 +214,6 @@ export class InfiniteForOf<T> implements OnChanges, DoCheck, OnInit, OnDestroy {
                 this._collection.splice(currentIndex, 0, this._collection.splice(adjustedPreviousIndex, 1)[0]);
             }
         });
-
         changes.forEachIdentityChange((record: any) => {
             this._collection[record.currentIndex] = record.item;
         });

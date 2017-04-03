@@ -1,4 +1,4 @@
-<div class="demo-container">
+<div class="demo-container" *ngIf="collection">
     <infinite-list [rowHeight]="40">
         <list-item-example *infiniteFor="let row of collection" [item]="row">
 

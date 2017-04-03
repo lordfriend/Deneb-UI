@@ -15,21 +15,22 @@ export class InfiniteListDemo implements OnInit {
     collection: any[];
 
     ngOnInit(): void {
-        this.collection = [];
-        for (let i = 0; i < 50; i++){
-            this.collection.push(i);
+        let collection = [];
+        for (let i = 0; i < 15; i++){
+            collection.push({index: i});
         }
-
         setTimeout(() => {
-            this.collection.splice(6, 1);
-            console.log('current collection', this.collection);
+            this.collection = collection;
         }, 3000);
 
         setTimeout(() => {
-            this.collection.splice(2,  0, this.collection.splice(6, 1)[0]);
-            console.log('current collection', this.collection);
-            this.collection.splice(6, 1);
-            console.log('current collection', this.collection);
-        }, 6000);
+            this.collection = collection.filter(item => item.index % 2 === 0);
+            // console.log('current collection', this.collection);
+        }, 5000);
+
+        setTimeout(() => {
+            this.collection = collection.filter(item => true);
+            // console.log('current collection', this.collection);
+        }, 7000);
     }
 }
