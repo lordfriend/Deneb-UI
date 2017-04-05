@@ -10,6 +10,7 @@ import {InfiniteListDemo} from './infinite-list/infinite-list.component';
 import {ListItemExample} from './infinite-list/list-item/list-item.component';
 import {TimelineMeterExample} from './timeline-meter/timeline-meter.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {DropdownDemo} from './dropdown/dropdown.component';
 @NgModule({
     declarations: [
         App,
@@ -19,7 +20,8 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
         PaginationDemo,
         InfiniteListDemo,
         ListItemExample,
-        TimelineMeterExample
+        TimelineMeterExample,
+        DropdownDemo
     ],
     imports: [UIModule, BrowserModule, BrowserAnimationsModule],
     bootstrap: [App],
