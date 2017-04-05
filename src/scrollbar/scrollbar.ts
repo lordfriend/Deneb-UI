@@ -3,7 +3,7 @@ import {
     ViewChild
 } from '@angular/core';
 import {Observable, Subscription} from 'rxjs';
-import {isInRect} from '../core/utils';
+import {isInRect} from '../core/helpers';
 
 export const SCROLL_DISTANCE = 10;
 

@@ -3,7 +3,7 @@ import {
     ViewChild
 } from '@angular/core';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
-import {isInRect} from '../core/utils';
+import {isInRect} from '../core/helpers';
 
 export class RowItem {
     // use native Date instead Momentjs to get a good performance
