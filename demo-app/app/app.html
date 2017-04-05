@@ -1,8 +1,13 @@
 <div class="app-container">
-    <toast-demo></toast-demo>
-    <dialog-demo></dialog-demo>
-    <pagination-demo></pagination-demo>
-    <!--<infinite-list-demo></infinite-list-demo>-->
-    <!--<timeline-meter-demo></timeline-meter-demo>-->
-    <dropdown-demo></dropdown-demo>
+    <div class="ui visible sidebar inverted vertical menu">
+        <a class="item" routerLink="/dialog">Dialog</a>
+        <a class="item" routerLink="/toast">Toast</a>
+        <a class="item" routerLink="/pagination">Pagination</a>
+        <a class="item" routerLink="/infinite-list">InfiniteList</a>
+        <a class="item" routerLink="/timeline-meter">TimelineMeter</a>
+        <a class="item" routerLink="/dropdown">Dropdown</a>
+    </div>
+    <div class="main-container">
+        <router-outlet></router-outlet>
+    </div>
 </div>

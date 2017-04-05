@@ -11,6 +11,7 @@ import {ListItemExample} from './infinite-list/list-item/list-item.component';
 import {TimelineMeterExample} from './timeline-meter/timeline-meter.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {DropdownDemo} from './dropdown/dropdown.component';
+import {RouterModule} from '@angular/router';
 @NgModule({
     declarations: [
         App,
@@ -23,7 +24,37 @@ import {DropdownDemo} from './dropdown/dropdown.component';
         TimelineMeterExample,
         DropdownDemo
     ],
-    imports: [UIModule, BrowserModule, BrowserAnimationsModule],
+    imports: [
+        UIModule,
+        BrowserModule,
+        BrowserAnimationsModule,
+        RouterModule.forRoot([
+            {
+                path: 'dialog',
+                component: Dialog
+            },
+            {
+                path: 'toast',
+                component: ToastDemo
+            },
+            {
+                path: 'pagination',
+                component: PaginationDemo
+            },
+            {
+                path: 'infinite-list',
+                component: InfiniteListDemo
+            },
+            {
+                path: 'timeline-meter',
+                component: TimelineMeterExample
+            },
+            {
+                path: 'dropdown',
+                component: DropdownDemo
+            }
+        ])
+    ],
     bootstrap: [App],
     entryComponents: [ExampleDialog]
 })
