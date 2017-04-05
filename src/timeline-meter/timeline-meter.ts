@@ -171,8 +171,8 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                 .filter(() => {
                     return this.timestampList && this.timestampList.length > 0;
                 })
-                .flatMap(() => {
-                    // console.log('mouse down');
+                .flatMap((event: MouseEvent) => {
+                    event.preventDefault();
                     return Observable.fromEvent(meterEl, 'mousemove')
                         .takeUntil(Observable.fromEvent(meterEl, 'mouseup'));
                 })

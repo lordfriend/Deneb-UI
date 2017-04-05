@@ -24,11 +24,19 @@ export class UIScrollbar implements AfterViewInit, OnChanges, OnDestroy {
 
     private _timer: number;
 
+    private _dragStartOffset: number = 0;
+
+    private _isDraging: boolean = false;
+
     @Input()
     contentHeight: number;
 
     @Input()
     set scrollPosition(percentage: number) {
+        if (this._isDraging) {
+            return;
+        }
+        console.log('set scroll, dirty is false');
         if (percentage >= 0 && percentage <=1 && this.scrollbarRect && this.scrollbarThumbHeight) {
             this.updateScrollBarThumbPosition((this.scrollbarRect.height - this.scrollbarThumbHeight) * percentage);
         }
@@ -73,12 +81,17 @@ export class UIScrollbar implements AfterViewInit, OnChanges, OnDestroy {
                     return isInRect(event.clientX, event.clientY, this.scrollbarRect);
                 })
                 .do((event: MouseEvent) => {
+                    this._isDraging = true;
+                    event.preventDefault();
                     let scrollbarThumbOffset = this.scrollbarThumbTop + this.scrollbarRect.top;
                     this._isDrag = event.clientY > scrollbarThumbOffset && event.clientY < scrollbarThumbOffset + this.scrollbarThumbHeight;
                     if (!this._isDrag) {
                         this._finalY = event.clientY - this.scrollbarRect.top;
                         console.log(this._finalY);
                         this.smoothScrollTo();
+                        this._dragStartOffset = 0;
+                    } else {
+                        this._dragStartOffset = event.clientY - scrollbarThumbOffset;
                     }
                 })
                 .flatMap(() => {
@@ -86,6 +99,8 @@ export class UIScrollbar implements AfterViewInit, OnChanges, OnDestroy {
                         .takeUntil(
                             Observable.fromEvent(document.body, 'mouseup')
                                 .do(() => {
+                                    this._isDraging = false;
+                                    this._dragStartOffset = 0;
                                     clearTimeout(this._timer);
                                 })
                         );
@@ -109,8 +124,11 @@ export class UIScrollbar implements AfterViewInit, OnChanges, OnDestroy {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if ('contentHeight' in changes && this.scrollbarRect && this.scrollbarRect.height) {
-            this.determineScrollbar(changes['contentHeight'].currentValue);
+        if ('contentHeight' in changes && changes['contentHeight'].currentValue) {
+            setTimeout(() => {
+                this.scrollbarRect = this.scrollbar.nativeElement.getBoundingClientRect();
+                this.determineScrollbar(changes['contentHeight'].currentValue);
+            });
         }
     }
 
@@ -135,7 +153,7 @@ export class UIScrollbar implements AfterViewInit, OnChanges, OnDestroy {
 
     private updateScrollBarThumbPosition(pos: number) {
         let scrollbarAvailableHeight = (this.scrollbarRect.height - this.scrollbarThumbHeight);
-        this.scrollbarThumbTop = Math.max(0, Math.min(pos, scrollbarAvailableHeight));
+        this.scrollbarThumbTop = Math.max(0, Math.min(pos - this._dragStartOffset, scrollbarAvailableHeight));
     }
 
     private determineScrollbar(contentHeight: number) {
@@ -145,7 +163,7 @@ export class UIScrollbar implements AfterViewInit, OnChanges, OnDestroy {
 
     private scrollTo(pos: number) {
         let scrollbarAvailableHeight = this.scrollbarRect.height - this.scrollbarThumbHeight;
-        let scrollPercentage = Math.max(0, Math.min(pos / scrollbarAvailableHeight, 1));
+        let scrollPercentage = Math.max(0, Math.min((pos - this._dragStartOffset) / scrollbarAvailableHeight, 1));
         this.scrollChange.emit(scrollPercentage);
     }
 }
