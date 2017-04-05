@@ -95,7 +95,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
     timestampList: number[];
 
     /**
-     * labelSpan is used to regular what span of time should a label be displayed.
+     * labelSpan describes what span of time should a label be displayed.
      * The labels display may vary base on timestamp list, height of each row and height of meter.
      * But the minimal time span of the label is not less than this value.
      * @type {string}

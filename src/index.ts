@@ -5,6 +5,7 @@ import {UIPaginationModule} from './pagination/index';
 import {UIInfiniteListModule} from './infinite-list/index';
 import {UITimelineMeterModule} from './timeline-meter/index';
 import {UIScrollbarModule} from './scrollbar/index';
+import {UIDropdownModule} from './dropdown/index';
 
 const UI_MODULES = [
     UIDialogModule,
@@ -12,7 +13,8 @@ const UI_MODULES = [
     UIPaginationModule,
     UIInfiniteListModule,
     UITimelineMeterModule,
-    UIScrollbarModule
+    UIScrollbarModule,
+    UIDropdownModule
 ];
 
 @NgModule({
@@ -29,3 +31,4 @@ export * from './pagination';
 export * from './infinite-list';
 export * from './timeline-meter';
 export * from './scrollbar';
+export * from './dropdown';
