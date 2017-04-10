@@ -1,68 +1,50 @@
 import {Observable, Subject, Subscription} from 'rxjs';
-import {Type, Injector, ComponentRef, ComponentFactoryResolver, ApplicationRef, EmbeddedViewRef} from '@angular/core';
-import {DialogContainer} from './dialog-container';
-import {DialogConfig} from './dialog';
-
+import {ApplicationRef, ComponentFactoryResolver, ComponentRef, Injector, Type} from '@angular/core';
+import {UIDialogConfig} from './dialog';
+import {UIDialogContainer} from './dialog-container';
 export class UIDialogRef<T> {
 
     componentInstance: T;
 
-    private _afterClosed: Subject<any> = new Subject();
+    private _subscription = new Subscription();
 
-    private _onContainerClickSubscription: Subscription;
+    private _afterClosed: Subject<any> = new Subject();
 
     private _disposeCallback: () => void;
 
     constructor(
-        private _container: DialogContainer,
+        private _container: ComponentRef<UIDialogContainer>,
         private _componentFactoryResolver: ComponentFactoryResolver,
         private _appRef: ApplicationRef,
-        private _config: DialogConfig
+        public config: UIDialogConfig
     ) {}
 
     attachComponent<T>(componentType: Type<T>,  injector?: Injector): ComponentRef<T> {
         let componentFactory = this._componentFactoryResolver.resolveComponentFactory(componentType);
-        let componentRef: ComponentRef<T>;
-
-        componentRef = componentFactory.create(injector);
-
-        this._appRef.attachView(componentRef.hostView);
-        this._disposeCallback = () => {
-            this._appRef.detachView(componentRef.hostView);
-            componentRef.destroy();
-        };
-        let containerElement = this._container.getContainerElement();
-        // At this point the component has been instantiated, so we move it to the location in the DOM
-        // where we want it to be rendered.
-        containerElement.appendChild(this._getComponentRootNode(componentRef));
-        this._container.dialogAttached();
-
-        if (!this._config.stickyDialog) {
-            this._onContainerClickSubscription = this._container.onContainerClick().subscribe(() => {
-                this.close();
-            });
+        let componentRef = componentFactory.create(injector);
+        let containerInstance = this._container.instance;
+        containerInstance.attachDialogContent(componentRef);
+        if (this.config.backdrop && !this.config.stickyDialog) {
+            this._subscription.add(
+                containerInstance.close
+                    .subscribe(() => this.close(null))
+            );
         }
-
+        this._disposeCallback = () => {
+            this._appRef.detachView(this._container.hostView)
+            this._container.destroy();
+        };
         return componentRef;
     }
 
     close(dialogResult?: any): void {
-        if (this._onContainerClickSubscription) {
-            this._onContainerClickSubscription.unsubscribe();
-        }
         this._disposeCallback();
         this._afterClosed.next(dialogResult);
         this._afterClosed.complete();
-        this._container.dialogDetached();
+        this._subscription.unsubscribe();
     }
 
     afterClosed(): Observable<any> {
         return this._afterClosed.asObservable();
-    }
-
-
-    /** Gets the root HTMLElement for an instantiated component. */
-    private _getComponentRootNode(componentRef: ComponentRef<any>): HTMLElement {
-        return (componentRef.hostView as EmbeddedViewRef<any>).rootNodes[0] as HTMLElement;
     }
 }

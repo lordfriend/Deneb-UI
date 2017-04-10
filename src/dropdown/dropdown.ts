@@ -60,7 +60,6 @@ export class UIDropdown implements OnInit, OnDestroy {
                 })
         );
         if (this.uiDropdown === 'hover') {
-
             this._subscription.add(
                 Observable.fromEvent(_el, 'mouseenter')
                     .do((event: MouseEvent) => {

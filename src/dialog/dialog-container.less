@@ -1,0 +1,22 @@
+.ui-dialog-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1000;
+  .backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0 , 0.85);
+    opacity: 0;
+    line-height: 1;
+    &.inverted {
+      background-color: rgba(255, 255, 255, 0.85);
+    }
+  }
+}

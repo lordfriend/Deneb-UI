@@ -1,8 +1,12 @@
 import {NgModule} from '@angular/core';
-import {DIALOG_PROVIDERS} from './dialog';
+import {UIDialog} from './dialog';
+import {UIDialogContainer} from './dialog-container';
 
 @NgModule({
-    providers: [DIALOG_PROVIDERS]
+    declarations: [UIDialogContainer],
+    providers: [UIDialog],
+    exports: [UIDialogContainer],
+    entryComponents: [UIDialogContainer]
 })
 export class UIDialogModule {
 

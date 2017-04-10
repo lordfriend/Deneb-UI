@@ -3,11 +3,9 @@ import {UIDialog} from './dialog';
 import {Component, NgModule} from '@angular/core';
 import {UIDialogRef} from './dialog-ref';
 import {UIDialogModule} from './index';
-import {DialogContainer} from './dialog-container';
 
 describe('UIDialog', () => {
     let dialog: UIDialog;
-    let dialogContainer: DialogContainer;
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
@@ -17,16 +15,14 @@ describe('UIDialog', () => {
         TestBed.compileComponents();
     }));
 
-    beforeEach(inject([UIDialog, DialogContainer], (d: UIDialog, dc: DialogContainer) => {
+    beforeEach(inject([UIDialog], (d: UIDialog) => {
         dialog = d;
-        dialogContainer = dc;
     }));
 
     it('should open a dialog with given component', () => {
-        let dialogRef = dialog.open(ExampleDialog, {stickyDialog: false});
-        let containerElement = dialogContainer.getContainerElement();
+        let dialogRef = dialog.open(ExampleDialog, {stickyDialog: false, backdrop: true});
         expect(dialogRef.componentInstance).toEqual(jasmine.any(ExampleDialog));
-        expect(containerElement.querySelector('example-dialog')).not.toBe(null);
+        expect(document.body.querySelector('example-dialog')).not.toBe(null);
     });
 });
 

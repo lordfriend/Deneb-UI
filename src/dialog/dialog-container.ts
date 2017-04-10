@@ -1,70 +1,68 @@
 import {
-    Optional, SkipSelf, Injectable
+    Component,
+    ComponentRef,
+    EventEmitter,
+    Input,
+    Output,
+    ViewChild,
+    ViewContainerRef,
+    ViewEncapsulation
 } from '@angular/core';
-import {Subject, Observable} from 'rxjs';
+import {animate, state, style, transition, trigger} from '@angular/animations';
+import {UIDialogConfig} from './dialog';
 
-@Injectable()
-export class DialogContainer {
-    private _dialogContainer: HTMLElement;
+@Component({
+    selector: 'ui-dialog-container',
+    templateUrl: 'dialog-container.html',
+    styleUrls: ['dialog-container.less'],
+    encapsulation: ViewEncapsulation.None,
+    animations: [
+        trigger('backdropState', [
+            state('active', style({opacity: '1'})),
+            transition('void => active', [
+                style({opacity: '0'}),
+                animate(200)
+            ]),
+            transition('active => void', [
+                style({opacity: '0'}),
+                animate(200)
+            ])
+        ])
+    ]
+})
+export class UIDialogContainer {
 
-    private _onContainerClick: Subject<any> = new Subject();
+    private _config: UIDialogConfig;
 
-    private _attachedDialogCount = 0;
+    backdropDisplay: string;
 
-    getContainerElement(): HTMLElement {
-        if (!this._dialogContainer) {
-            this._createDimmerContainer();
+    @ViewChild('backdrop', {read: ViewContainerRef}) _viewContainer: ViewContainerRef;
+
+    @Input()
+    set dialogConfig(config: UIDialogConfig) {
+        this._config = config;
+        if (config.backdrop) {
+            this.backdropDisplay = 'block';
+        } else {
+            this.backdropDisplay = 'none';
         }
-        return this._dialogContainer;
     }
 
-    dialogAttached() {
-        this._attachedDialogCount++;
-        this._showContainer();
+    get dialogConfig(): UIDialogConfig {
+        return this._config;
     }
 
-    dialogDetached() {
-        if (!this._dialogContainer) {
-            return;
-        }
-        this._attachedDialogCount--;
+    @Output()
+    close = new EventEmitter<any>();
 
-        if (this._attachedDialogCount <= 0) {
-            this._hideContainer();
+    onClickBackDrop() {
+        if (!this.dialogConfig.stickyDialog) {
+            this.close.emit(null);
         }
     }
 
-    onContainerClick(): Observable<any> {
-        return this._onContainerClick.asObservable();
+    attachDialogContent<T>(componentRef: ComponentRef<T>) {
+        console.log(this._viewContainer.element.nativeElement);
+        this._viewContainer.insert(componentRef.hostView);
     }
-
-    private _showContainer() {
-        this._dialogContainer.classList.add('active');
-    }
-
-    private _hideContainer() {
-        this._dialogContainer.classList.remove('active');
-    }
-
-    private _createDimmerContainer(): void {
-        this._dialogContainer = document.createElement('div');
-        this._dialogContainer.classList.add('ui-overlay-container');
-        this._dialogContainer.classList.add('ui');
-        this._dialogContainer.classList.add('dimmer');
-        document.body.appendChild(this._dialogContainer);
-        this._dialogContainer.addEventListener('click', () => {this._onContainerClick.next(null);});
-    }
-
-
 }
-
-
-export function DialogContainerFactory(parentContainer: DialogContainer) {
-    return parentContainer || new DialogContainer();
-}
-
-export const DIALOG_CONTAINER = {
-    provide: DialogContainer,
-    deps: [[new Optional(), new SkipSelf(), DialogContainer]],
-    useFactory: DialogContainerFactory
-};

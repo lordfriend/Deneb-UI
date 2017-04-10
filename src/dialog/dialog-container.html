@@ -1,0 +1,7 @@
+<div class="ui-dialog-container">
+    <div #backdrop
+         class="backdrop"
+         [style.display]="backdropDisplay"
+         [@backdropState]="'active'"
+         (click)="onClickBackDrop($event)"></div>
+</div>
