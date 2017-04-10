@@ -12,7 +12,7 @@ export class UIDropdown implements OnInit, OnDestroy {
 
     private _subscription = new Subscription();
     private _menuOpen: boolean = false;
-    private _timestamp: number;
+    private _timestamp: number = 0;
 
     /**
      * determine what event should trigger dropdown open.
@@ -56,6 +56,7 @@ export class UIDropdown implements OnInit, OnDestroy {
                     if (event.timeStamp !== this._timestamp && this.menuOpen) {
                         this.menuOpen = false;
                     }
+                    this._timestamp = 0;
                     return false;
                 })
         );
