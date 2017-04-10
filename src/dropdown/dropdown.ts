@@ -1,4 +1,4 @@
-import {Directive, ElementRef, Input, OnInit} from '@angular/core';
+import {Directive, ElementRef, HostListener, Input, OnDestroy, OnInit, Renderer2} from '@angular/core';
 import {Observable, Subscription} from 'rxjs';
 
 @Directive({
@@ -8,10 +8,11 @@ import {Observable, Subscription} from 'rxjs';
         '[class.visible]': 'menuOpen'
     }
 })
-export class UIDropdown implements OnInit {
+export class UIDropdown implements OnInit, OnDestroy {
 
     private _subscription = new Subscription();
     private _menuOpen: boolean = false;
+    private _timestamp: number;
 
     /**
      * determine what event should trigger dropdown open.
@@ -40,32 +41,26 @@ export class UIDropdown implements OnInit {
     constructor(private _element: ElementRef) {
     }
 
+    @HostListener('click', ['$event'])
+    onHostClick(event: MouseEvent) {
+        this._timestamp = event.timeStamp;
+        this.menuOpen = !this.menuOpen;
+        return false;
+    }
+
     ngOnInit(): void {
         let _el = this._element.nativeElement;
-        if (this.uiDropdown === 'click') {
-            this._subscription.add(
-                Observable.fromEvent(_el, 'click')
-                    .filter(() => !this.menuOpen)
-                    .do((event: MouseEvent) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        this.menuOpen = true;
-                    })
-                    .flatMap(() => {
-                        return Observable.fromEvent(document.body, 'click')
-                            .do((event: MouseEvent) => {
-                                event.preventDefault();
-                                event.stopPropagation();
-                            })
-                            .takeWhile(() => this.menuOpen)
-                    })
-                    .subscribe(
-                        () => {
-                            this.menuOpen = false;
-                        }
-                    )
-            );
-        } else if (this.uiDropdown === 'hover') {
+        this._subscription.add(
+            Observable.fromEvent(document.body, 'click')
+                .subscribe((event: MouseEvent) => {
+                    if (event.timeStamp !== this._timestamp && this.menuOpen) {
+                        this.menuOpen = false;
+                    }
+                    return false;
+                })
+        );
+        if (this.uiDropdown === 'hover') {
+
             this._subscription.add(
                 Observable.fromEvent(_el, 'mouseenter')
                     .do((event: MouseEvent) => {
@@ -86,5 +81,9 @@ export class UIDropdown implements OnInit {
                     )
             );
         }
+    }
+
+    ngOnDestroy(): void {
+        this._subscription.unsubscribe();
     }
 }

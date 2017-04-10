@@ -11,6 +11,7 @@ describe('UIDropdown', () => {
     }
 
     afterEach(() => {
+        fixture.destroy();
         fixture = null;
     });
 
@@ -21,7 +22,7 @@ describe('UIDropdown', () => {
         });
     }));
 
-    it('should manipulate classes on element when event fires', () => {
+    it('should show menu when click dropdown', () => {
         fixture = createTestComponent();
         fixture.detectChanges();
         let de = fixture.debugElement.query(By.css('[uiDropdown]'));
@@ -37,6 +38,21 @@ describe('UIDropdown', () => {
         expect(el.classList.contains('visible')).toBe(true);
         expect(menu.classList.contains('transition')).toBe(true);
         expect(menu.classList.contains('visible')).toBe(true);
+    });
+
+    it('should hide menu when click item', () => {
+        fixture = createTestComponent();
+        fixture.detectChanges();
+        let de = fixture.debugElement.query(By.css('[uiDropdown]'));
+        let el = de.nativeElement;
+        let menu = el.querySelector('.menu');
+        // open dropdown
+        el.dispatchEvent(createEvent('click'));
+        fixture.detectChanges();
+        expect(el.classList.contains('active')).toBe(true);
+        expect(el.classList.contains('visible')).toBe(true);
+        expect(menu.classList.contains('transition')).toBe(true);
+        expect(menu.classList.contains('visible')).toBe(true);
         // click item
         let items = menu.querySelectorAll('.item');
         items[0].dispatchEvent(createEvent('click'));
@@ -45,7 +61,14 @@ describe('UIDropdown', () => {
         expect(el.classList.contains('visible')).toBe(false);
         expect(menu.classList.contains('visible')).toBe(false);
         expect(menu.classList.contains('hidden')).toBe(true);
+    });
 
+    it('should hide menu when click outside', () => {
+        fixture = createTestComponent();
+        fixture.detectChanges();
+        let de = fixture.debugElement.query(By.css('[uiDropdown]'));
+        let el = de.nativeElement;
+        let menu = el.querySelector('.menu');
         // open and click outside
         el.dispatchEvent(createEvent('click'));
         fixture.detectChanges();
@@ -59,7 +82,7 @@ describe('UIDropdown', () => {
         expect(el.classList.contains('visible')).toBe(false);
         expect(menu.classList.contains('visible')).toBe(false);
         expect(menu.classList.contains('hidden')).toBe(true);
-    });
+    })
 });
 
 @Component({
