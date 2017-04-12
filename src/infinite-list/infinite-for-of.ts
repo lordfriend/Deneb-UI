@@ -367,7 +367,9 @@ export class InfiniteForOf<T> implements OnChanges, DoCheck, OnInit, OnDestroy {
         if (!view) {
             view = this._template.createEmbeddedView(new InfiniteRow(item, position, count));
         } else {
-            (view as EmbeddedViewRef<InfiniteRow>).context.$implicit = this._collection[position];
+            (view as EmbeddedViewRef<InfiniteRow>).context.$implicit = item;
+            (view as EmbeddedViewRef<InfiniteRow>).context.index = position;
+            (view as EmbeddedViewRef<InfiniteRow>).context.count = count;
         }
         return view;
     }

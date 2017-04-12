@@ -1,6 +1,6 @@
 <div class="demo-container" *ngIf="collection">
-    <infinite-list [rowHeight]="40">
-        <list-item-example *infiniteFor="let row of collection" [item]="row">
+    <infinite-list [rowHeight]="140">
+        <list-item-example *infiniteFor="let row of collection; let i = index" [item]="row" [index]="i">
 
         </list-item-example>
     </infinite-list>

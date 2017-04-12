@@ -1,5 +1,11 @@
 <div class="list-item-example">
-    <div class="content">
-        index: {{item.index}}
+    <div class="list-item-wrapper">
+        <div class="image">
+            <img [src]="item.image" alt="image">
+        </div>
+        <div class="content">
+            {{item.content}}
+        </div>
+        <div class="index-label">{{index}}</div>
     </div>
 </div>
