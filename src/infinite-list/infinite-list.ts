@@ -20,6 +20,8 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
     private _scrollPosition: BehaviorSubject<number> = new BehaviorSubject(0);
     private _sizeChange: BehaviorSubject<number[]> = new BehaviorSubject([0, 0]);
 
+    private ignoreScrollEvent = false;
+
     currentScrollState: SCROLL_STATE = SCROLL_STATE.IDLE;
 
     @ViewChild('listContainer') listContainer: ElementRef;
@@ -93,6 +95,13 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
                 }));
         }
         this._subscription.add(Observable.fromEvent(this.listContainer.nativeElement, 'scroll')
+            .filter(() => {
+                if (this.ignoreScrollEvent) {
+                    this.ignoreScrollEvent = false;
+                    return false;
+                }
+                return true;
+            })
             .map(() => {
                 return this.listContainer.nativeElement.scrollTop;
             })
@@ -130,6 +139,7 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
                 })
                 .do(
                     (scrollY: number) => {
+                        this.ignoreScrollEvent = true;
                         this.listContainer.nativeElement.scrollTop = scrollY;
                         this._scrollPosition.next(scrollY);
                         if (this.currentScrollState === SCROLL_STATE.IDLE) {

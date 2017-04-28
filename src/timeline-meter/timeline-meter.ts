@@ -4,6 +4,7 @@ import {
 } from '@angular/core';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {isInRect} from '../core/helpers';
+import {SCROLL_STATE, SCROLL_STOP_TIME_THRESHOLD} from '../infinite-list/infinite-list';
 
 export class RowItem {
     // use native Date instead Momentjs to get a good performance
@@ -63,6 +64,8 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
     private _meterHeight: number;
     private _isBuilding: boolean;
     private _isInMeasure: boolean;
+
+    contentScrollState: SCROLL_STATE = SCROLL_STATE.IDLE;
 
     scrollPercentage: number;
 
@@ -275,6 +278,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                             }
                         );
                 })
+                .filter(() => this.contentScrollState === SCROLL_STATE.IDLE) // skip when scroll state is scrolling.
                 .subscribe(
                     (event: MouseEvent) => {
                         let meterRect = meterEl.getBoundingClientRect();
@@ -318,12 +322,30 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                 })
                 .debounceTime(TOOLTIP_FADE_TIME)
                 .subscribe(
-                    () => {
+                    (velocity) => {
                         if (this.showTooltip) {
                             this.showTooltip = false;
                         }
                     }
                 ));
+
+        // track the scroll state change
+        this._subscription.add(
+            this._onContentScroll
+                .do(() => {
+                    if (this.contentScrollState === SCROLL_STATE.IDLE) {
+                        this.contentScrollState = SCROLL_STATE.SCROLLING;
+                    }
+                })
+                .debounceTime(SCROLL_STOP_TIME_THRESHOLD)
+                .subscribe(
+                    ()=> {
+                        if (this.contentScrollState === SCROLL_STATE.SCROLLING) {
+                            this.contentScrollState = SCROLL_STATE.IDLE;
+                        }
+                    }
+                )
+        );
 
         // measure once view is ready
         setTimeout(() => {

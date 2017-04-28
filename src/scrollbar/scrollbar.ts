@@ -36,7 +36,7 @@ export class UIScrollbar implements AfterViewInit, OnChanges, OnDestroy {
         if (this._isDraging) {
             return;
         }
-        console.log('set scroll, dirty is false');
+        // console.log('set scroll, dirty is false');
         if (percentage >= 0 && percentage <=1 && this.scrollbarRect && this.scrollbarThumbHeight) {
             this.updateScrollBarThumbPosition((this.scrollbarRect.height - this.scrollbarThumbHeight) * percentage);
         }
@@ -148,7 +148,7 @@ export class UIScrollbar implements AfterViewInit, OnChanges, OnDestroy {
             this.updateScrollBarThumbPosition(scrollY);
             this.scrollTo(scrollY);
             this.smoothScrollTo();
-        }, 100);
+        }, 20);
     }
 
     private updateScrollBarThumbPosition(pos: number) {
