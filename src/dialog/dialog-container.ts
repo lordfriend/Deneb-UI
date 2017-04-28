@@ -55,7 +55,9 @@ export class UIDialogContainer {
     @Output()
     close = new EventEmitter<any>();
 
-    onClickBackDrop() {
+    onClickBackDrop($event: Event) {
+        $event.preventDefault();
+        $event.stopPropagation();
         if (!this.dialogConfig.stickyDialog) {
             this.close.emit(null);
         }

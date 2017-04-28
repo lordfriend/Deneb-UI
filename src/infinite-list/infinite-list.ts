@@ -90,8 +90,7 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
         if (window) {
             this._subscription.add(Observable.fromEvent(window, 'resize')
                 .subscribe(() => {
-                    let {width, height} = this.measure();
-                    this._sizeChange.next([width, height]);
+                    this.requestMeasure();
                 }));
         }
         this._subscription.add(Observable.fromEvent(this.listContainer.nativeElement, 'scroll')
@@ -159,8 +158,7 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
                 ));
         }
         setTimeout(() => {
-            let {width, height} = this.measure();
-            this._sizeChange.next([width, height]);
+            this.requestMeasure();
         });
     }
 
@@ -178,6 +176,11 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
             return {width: this._containerWidth, height: this._containerHeight};
         }
         return {width: 0, height: 0};
+    }
+
+    requestMeasure() {
+        let {width, height} = this.measure();
+        this._sizeChange.next([width, height]);
     }
 }
 
