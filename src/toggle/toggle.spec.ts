@@ -2,13 +2,14 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { UIToggleModule } from './index';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Component, DebugElement } from '@angular/core';
+import { UIToggle } from './toggle';
 import { By } from '@angular/platform-browser';
 describe('UIToggle', () => {
 
     let fixture: ComponentFixture<any>;
 
 
-    function createEvent(type: string):Event {
+    function createEvent(type: string): Event {
         return new Event(type, {bubbles: true, cancelable: true});
     }
 
@@ -24,30 +25,38 @@ describe('UIToggle', () => {
     }));
 
     describe('ngModel basic', () => {
-        let toggleDebugElement: DebugElement;
-        let toggleNativeElement: HTMLElement;
-        let toggleInstance: NgModelBasic;
+        let testDebugElement: DebugElement;
+        let testNativeElement: HTMLElement;
+        let testInstance: NgModelBasic;
+        let labelElement: HTMLLabelElement;
 
         beforeEach(() => {
             fixture = TestBed.createComponent(NgModelBasic);
             fixture.detectChanges();
 
-            toggleDebugElement = fixture.debugElement.query(By.directive(NgModelBasic));
-            toggleNativeElement = toggleDebugElement.nativeElement;
-            toggleInstance = toggleDebugElement.componentInstance;
+            testDebugElement = fixture.debugElement;
+            testNativeElement = testDebugElement.nativeElement;
+            testInstance = testDebugElement.componentInstance;
+            labelElement = testNativeElement.querySelector('label');
         });
 
-        it('should change value of NgModelBasic by clicking the UIToggle', () => {
-            expect(toggleInstance.value).toBe(true);
-            toggleNativeElement.dispatchEvent(createEvent('click'));
+        it('should change value of NgModelBasic by clicking the UIToggle', async() => {
+            expect(testInstance.value).toBe(false);
+            labelElement.click();
             fixture.detectChanges();
-            expect(toggleInstance.value).toBe(false);
+            fixture.whenStable()
+                .then(() => {
+                    expect(testInstance.value).toBe(true);
+                });
         });
     });
 });
 
 @Component({
-    template: `<ui-toggle [(ngModel)]="value"></ui-toggle>`
+    template: `
+        <form>
+            <ui-toggle [(ngModel)]="value" name="toggle1"></ui-toggle>
+        </form>`
 })
 class NgModelBasic {
     value = false;
