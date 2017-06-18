@@ -5,3 +5,7 @@ branches:
   only:
   - master
 cache: yarn
+scripts:
+  - "rm -rf node_modules",
+  - "yarn",
+  - "npm test"
