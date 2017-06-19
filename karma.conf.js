@@ -5,7 +5,6 @@ module.exports = function (config) {
     let browsers = ['Chrome', 'PhantomJS'];
     if (process.env.TRAVIS) {
         browsers = [
-            'ChromeTravisCI',
             'PhantomJS'
         ];
     }
