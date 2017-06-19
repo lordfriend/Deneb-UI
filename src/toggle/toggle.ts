@@ -3,7 +3,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 let nextId = 0;
 
-export const UI_TOGGLE_VALUE_ACCESSSOR: ExistingProvider = {
+export const UI_TOGGLE_VALUE_ACCESSOR: ExistingProvider = {
     provide: NG_VALUE_ACCESSOR,
     useExisting: forwardRef(() => UIToggle),
     multi: true
@@ -13,7 +13,7 @@ export const UI_TOGGLE_VALUE_ACCESSSOR: ExistingProvider = {
     selector: 'ui-toggle',
     templateUrl: './toggle.html',
     styleUrls: ['./toggle.less'],
-    providers: [UI_TOGGLE_VALUE_ACCESSSOR]
+    providers: [UI_TOGGLE_VALUE_ACCESSOR]
 })
 export class UIToggle implements ControlValueAccessor {
 

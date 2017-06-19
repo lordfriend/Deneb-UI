@@ -7,7 +7,7 @@ import {
     EmbeddedViewRef,
     Injectable,
     Injector,
-    Type
+    Type, ViewContainerRef
 } from '@angular/core';
 import {UIDialogRef} from './dialog-ref';
 import {UIDialogContainer} from './dialog-container';
@@ -21,12 +21,13 @@ export class UIDialog {
         private _injector: Injector
     ) {}
 
-    open<T>(component: Type<T>, config: UIDialogConfig): UIDialogRef<T> {
+    open<T>(component: Type<T>, config: UIDialogConfig, viewContainer?: ViewContainerRef): UIDialogRef<T> {
         let componentFactory = this._componentFactoryResolver.resolveComponentFactory(UIDialogContainer);
         let container = componentFactory.create(this._injector);
         container.instance.dialogConfig = config;
+        container.instance.insideParent = !!viewContainer;
         let dialogRef = this.createDialogContent(component, container, config);
-        this.attachContainer(container);
+        this.attachContainer(container, viewContainer);
         return dialogRef;
     }
 
@@ -38,9 +39,13 @@ export class UIDialog {
         return dialogRef;
     }
 
-    attachContainer(containerRef: ComponentRef<UIDialogContainer>) {
-        this._appRef.attachView(containerRef.hostView);
-        document.body.appendChild(this.getComponentRootNode(containerRef));
+    attachContainer(containerRef: ComponentRef<UIDialogContainer>, viewContainer?: ViewContainerRef) {
+        if (viewContainer) {
+            viewContainer.insert(containerRef.hostView);
+        } else {
+            this._appRef.attachView(containerRef.hostView);
+            document.body.appendChild(this.getComponentRootNode(containerRef));
+        }
     }
 
     /** Gets the root HTMLElement for an instantiated component. */
@@ -53,5 +58,4 @@ export class UIDialogConfig {
     // stickyDialog means it cannot be closed through click on the backdrop or press escape key.
     stickyDialog: boolean = false;
     backdrop: boolean = true;
-
 }

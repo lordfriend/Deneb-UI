@@ -22,7 +22,8 @@
     "start": "npm run server:dev",
     "test": "karma start",
     "webpack-dev-server": "webpack-dev-server",
-    "webpack": "webpack"
+    "webpack": "webpack",
+    "postinstall": "node scripts/font-fix.js"
   },
   "dependencies": {},
   "devDependencies": {
@@ -68,7 +69,7 @@
     "run-sequence": "^1.2.2",
     "rxjs": "^5.0.1",
     "semantic-ui-less": "^2.2.4",
-    "semantic-ui-less-module-loader": "^0.1.5",
+    "semantic-ui-less-module-loader": "^1.0.0",
     "source-map-loader": "^0.1.6",
     "string-replace-loader": "^1.0.5",
     "style-loader": "^0.13.1",

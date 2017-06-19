@@ -32,25 +32,26 @@ import {UIDialogConfig} from './dialog';
 })
 export class UIDialogContainer {
 
-    private _config: UIDialogConfig;
+    get backdropOpacity(): number {
+        if (this.dialogConfig && !this.dialogConfig.backdrop) {
+            return 0;
+        }
+        return 1;
+    }
 
-    backdropDisplay: string;
+    get backdropState(): string {
+        if (this.backdropOpacity === 1) {
+            return 'active';
+        }
+        return 'inactive'
+    }
+
+    insideParent: boolean;
 
     @ViewChild('backdrop', {read: ViewContainerRef}) _viewContainer: ViewContainerRef;
 
     @Input()
-    set dialogConfig(config: UIDialogConfig) {
-        this._config = config;
-        if (config.backdrop) {
-            this.backdropDisplay = 'block';
-        } else {
-            this.backdropDisplay = 'none';
-        }
-    }
-
-    get dialogConfig(): UIDialogConfig {
-        return this._config;
-    }
+    dialogConfig: UIDialogConfig;
 
     @Output()
     close = new EventEmitter<any>();

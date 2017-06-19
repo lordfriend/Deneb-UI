@@ -24,14 +24,14 @@ export class UIDialogRef<T> {
         let componentRef = componentFactory.create(injector);
         let containerInstance = this._container.instance;
         containerInstance.attachDialogContent(componentRef);
-        if (this.config.backdrop && !this.config.stickyDialog) {
+        if (!this.config.stickyDialog) {
             this._subscription.add(
                 containerInstance.close
                     .subscribe(() => this.close(null))
             );
         }
         this._disposeCallback = () => {
-            this._appRef.detachView(this._container.hostView)
+            this._appRef.detachView(this._container.hostView);
             this._container.destroy();
         };
         return componentRef;
