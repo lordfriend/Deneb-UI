@@ -5,6 +5,12 @@
   bottom: 0;
   left: 0;
   z-index: 1000;
+  &.local-container {
+    position: absolute;
+    .backdrop {
+      position: absolute;
+    }
+  }
   .backdrop {
     display: none;
     position: fixed;

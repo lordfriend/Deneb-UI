@@ -36,6 +36,8 @@ export class UIDialogContainer {
 
     backdropDisplay: string;
 
+    insideParent: boolean;
+
     @ViewChild('backdrop', {read: ViewContainerRef}) _viewContainer: ViewContainerRef;
 
     @Input()

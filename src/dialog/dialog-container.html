@@ -1,4 +1,4 @@
-<div class="ui-dialog-container">
+<div class="ui-dialog-container" [ngClass]="{'local-container': insideParent}">
     <div #backdrop
          class="backdrop"
          [style.display]="backdropDisplay"
