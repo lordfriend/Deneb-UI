@@ -14,5 +14,6 @@ Current implemented component:
 - InfiniteList
 - TimelineMeter
 - Dropdown (directive)
+- Toggle
 
 Notice: When you want use toast, you must import `BrowserAnimationsModule` in your application module.
