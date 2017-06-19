@@ -58,5 +58,4 @@ export class UIDialogConfig {
     // stickyDialog means it cannot be closed through click on the backdrop or press escape key.
     stickyDialog: boolean = false;
     backdrop: boolean = true;
-
 }

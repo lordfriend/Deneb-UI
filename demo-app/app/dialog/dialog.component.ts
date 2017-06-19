@@ -35,4 +35,8 @@ export class Dialog {
     openDialogInsideContainer() {
         let dialogRef = this._uiDialog.open(ExampleDialog, {stickyDialog: false, backdrop: true}, this.refChild);
     }
+
+    openNonStickyNoBackdropDialog() {
+        let dialogRef = this._uiDialog.open(ExampleDialog, {stickyDialog: false, backdrop: false});
+    }
 }
