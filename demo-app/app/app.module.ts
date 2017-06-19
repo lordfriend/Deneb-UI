@@ -12,6 +12,8 @@ import {TimelineMeterExample} from './timeline-meter/timeline-meter.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {DropdownDemo} from './dropdown/dropdown.component';
 import {RouterModule} from '@angular/router';
+import { ToggleDemo } from './toggle/toggle.component';
+import { FormsModule } from '@angular/forms';
 @NgModule({
     declarations: [
         App,
@@ -22,12 +24,14 @@ import {RouterModule} from '@angular/router';
         InfiniteListDemo,
         ListItemExample,
         TimelineMeterExample,
-        DropdownDemo
+        DropdownDemo,
+        ToggleDemo
     ],
     imports: [
         UIModule,
         BrowserModule,
         BrowserAnimationsModule,
+        FormsModule,
         RouterModule.forRoot([
             {
                 path: 'dialog',
@@ -52,6 +56,10 @@ import {RouterModule} from '@angular/router';
             {
                 path: 'dropdown',
                 component: DropdownDemo
+            },
+            {
+                path: 'toggle',
+                component: ToggleDemo
             }
         ])
     ],

@@ -6,6 +6,7 @@ import {UIInfiniteListModule} from './infinite-list/index';
 import {UITimelineMeterModule} from './timeline-meter/index';
 import {UIScrollbarModule} from './scrollbar/index';
 import {UIDropdownModule} from './dropdown/index';
+import { UIToggleModule } from './toggle/index';
 
 const UI_MODULES = [
     UIDialogModule,
@@ -14,7 +15,8 @@ const UI_MODULES = [
     UIInfiniteListModule,
     UITimelineMeterModule,
     UIScrollbarModule,
-    UIDropdownModule
+    UIDropdownModule,
+    UIToggleModule
 ];
 
 @NgModule({
@@ -32,3 +34,4 @@ export * from './infinite-list';
 export * from './timeline-meter';
 export * from './scrollbar';
 export * from './dropdown';
+export * from './toggle';

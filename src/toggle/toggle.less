@@ -1,0 +1,86 @@
+@transitionTime: 0.2s;
+@activeBg: #97bbf7;
+@inactiveBg: #adadad;
+
+:host {
+  display: inline-block;
+  box-sizing: border-box;
+}
+
+input.hidden {
+  display: none;
+}
+
+label {
+  display: inline-block;
+  padding-left: 2.5em;
+  position: relative;
+  line-height: 1.4;
+  cursor: pointer;
+  &:before {
+    content: " ";
+    position: absolute;
+    width: 2em;
+    height: 0.6em;
+    top: 0.4em;
+    left: 0.1em;
+    background: @inactiveBg;
+    border-radius: 0.3em;
+  }
+  &:after {
+    content: " ";
+    position: absolute;
+    width: 1em;
+    height: 1em;
+    top: 0.2em;
+    left: 0.1em;
+    background: #ffffff;
+    border-radius: 0.5em;
+    -webkit-box-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+    -moz-box-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+  }
+
+  &.ready {
+    &:before{
+      -webkit-transition: background @transitionTime;
+      -moz-transition: background @transitionTime;
+      -ms-transition: background @transitionTime;
+      -o-transition: background @transitionTime;
+      transition: background @transitionTime;
+    }
+
+    &:after {
+      -webkit-transition: left @transitionTime;
+      -moz-transition: left @transitionTime;
+      -ms-transition: left @transitionTime;
+      -o-transition: left @transitionTime;
+      transition: left @transitionTime;
+    }
+  }
+  &.disabled {
+    &:before {
+      background: lighten(@inactiveBg, 15%);
+    }
+    &:after {
+      -webkit-box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
+      -moz-box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
+    }
+  }
+}
+
+input[type="checkbox"]:checked + label {
+  &:before {
+    background: @activeBg;
+  }
+  &:after {
+    left: 1.1em;
+  }
+
+  &.disabled {
+    &:before {
+      background: lighten(@activeBg, 15%);
+    }
+  }
+}

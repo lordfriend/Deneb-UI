@@ -33,7 +33,7 @@ describe('UITimelineMeter', () => {
             let labels = el.querySelectorAll('.render-entity .label');
             // calculate initial displayed element.
             // let firstPosition = 0;
-            expect(labels.length).toEqual(4);
+            expect(labels.length).toEqual(5);
             done();
         }, 500);
     });
@@ -46,7 +46,7 @@ describe('UITimelineMeter', () => {
         ui-timeline-meter {
             display: block;
             width: 200px;
-            height: 300px;
+            height: 400px;
         }
         .demo-card {
             width: 100%;

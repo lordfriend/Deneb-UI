@@ -1,0 +1,27 @@
+<div class="toggle-container">
+    <form class="ui form">
+        <div class="field">
+            <ui-toggle text="Toggle 1 with default" [(ngModel)]="value1" name="toggle1"></ui-toggle>
+            <span>value of toggle 1 is {{value1}}</span>
+        </div>
+        <div class="field">
+            <ui-toggle text="Toggle 2 with default" [(ngModel)]="value2" name="toggle2"></ui-toggle>
+            <span>value of toggle 2 is {{value2}}</span>
+        </div>
+        <div class="field">
+            <ui-toggle text="Toggle 3 with disabled" [(ngModel)]="value3" name="toggle3" [disabled]="true"></ui-toggle>
+        </div>
+        <div class="field">
+            <ui-toggle text="Toggle 4 with disabled" [(ngModel)]="value4" name="toggle4" [disabled]="true"></ui-toggle>
+        </div>
+        <div class="field">
+            <label>Toggle 5 disabled state depend on toggle 1</label>
+        </div>
+        <div class="field">
+            <ui-toggle text="Toggle 5 with disabled" [(ngModel)]="value5" name="toggle5" [disabled]="value1"></ui-toggle>
+        </div>
+    </form>
+    <form class="ui form">
+
+    </form>
+</div>

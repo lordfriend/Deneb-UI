@@ -1,0 +1,11 @@
+<input type="checkbox"
+       [id]="inputId"
+       [value]="value"
+       [checked]="checked"
+       [disabled]="isDisabled"
+       class="hidden"
+       tabindex="0"
+       (change)="onInputChange($event)">
+<label [ngClass]="{ready: ready, disabled: isDisabled}" [for]="inputId">
+    {{text}}
+</label>
