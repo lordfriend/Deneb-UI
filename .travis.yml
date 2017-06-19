@@ -4,8 +4,3 @@ node_js:
 branches:
   only:
   - master
-script: [
-  "rm -rf node_modules",
-  "yarn",
-  "npm test"
-]
