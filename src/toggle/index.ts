@@ -10,3 +10,5 @@ import { CommonModule } from '@angular/common';
 export class UIToggleModule {
 
 }
+
+export * from './toggle';
