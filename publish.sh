@@ -17,10 +17,14 @@ $(npm bin)/gulp build
 
 # cp files
 echo 'copy files'
-cp package.json ./dist/
+
 cp .npmignore ./dist/
 cp LICENSE ./dist/
 cp README.md ./dist/
+
+# prepare package.json
+
+node ./scripts/prepare-package-json.js
 
 echo 'publish...'
 # publish
