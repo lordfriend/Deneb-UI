@@ -5,7 +5,7 @@
        [disabled]="isDisabled"
        class="hidden"
        tabindex="0"
-       (change)="onInputChange($event)">
+       (change)="onInputChange()">
 <label [ngClass]="{ready: ready, disabled: isDisabled}" [for]="inputId">
     {{text}}
 </label>
