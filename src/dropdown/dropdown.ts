@@ -1,5 +1,5 @@
-import {Directive, ElementRef, HostListener, Input, OnDestroy, OnInit} from '@angular/core';
-import {Observable, Subscription} from 'rxjs';
+import { Directive, ElementRef, HostListener, Input, OnDestroy, OnInit } from '@angular/core';
+import { Observable, Subscription } from 'rxjs';
 
 @Directive({
     selector: '[uiDropdown]',
@@ -20,6 +20,9 @@ export class UIDropdown implements OnInit, OnDestroy {
      */
     @Input()
     uiDropdown: 'click' | 'hover' = 'click';
+
+    @Input()
+    stopPropagation = false;
 
     set menuOpen(value: boolean) {
         let menu = this._element.nativeElement.querySelector('.menu');
@@ -43,9 +46,12 @@ export class UIDropdown implements OnInit, OnDestroy {
 
     @HostListener('click', ['$event'])
     onHostClick(event: MouseEvent) {
+        event.preventDefault();
+        if (this.stopPropagation) {
+            event.stopPropagation();
+        }
         this._timestamp = event.timeStamp;
         this.menuOpen = !this.menuOpen;
-        return false;
     }
 
     ngOnInit(): void {
@@ -53,11 +59,11 @@ export class UIDropdown implements OnInit, OnDestroy {
         this._subscription.add(
             Observable.fromEvent(document.body, 'click')
                 .subscribe((event: MouseEvent) => {
+                    event.preventDefault();
                     if (event.timeStamp !== this._timestamp && this.menuOpen) {
                         this.menuOpen = false;
                     }
                     this._timestamp = 0;
-                    return false;
                 })
         );
         if (this.uiDropdown === 'hover') {

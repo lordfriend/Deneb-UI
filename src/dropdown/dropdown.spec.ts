@@ -82,7 +82,7 @@ describe('UIDropdown', () => {
         expect(el.classList.contains('visible')).toBe(false);
         expect(menu.classList.contains('visible')).toBe(false);
         expect(menu.classList.contains('hidden')).toBe(true);
-    })
+    });
 });
 
 @Component({
