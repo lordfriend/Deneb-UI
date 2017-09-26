@@ -59,8 +59,8 @@ export class UIDropdown implements OnInit, OnDestroy {
         this._subscription.add(
             Observable.fromEvent(document.body, 'click')
                 .subscribe((event: MouseEvent) => {
-                    event.preventDefault();
                     if (event.timeStamp !== this._timestamp && this.menuOpen) {
+                        event.preventDefault();
                         this.menuOpen = false;
                     }
                     this._timestamp = 0;

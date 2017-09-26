@@ -1,4 +1,7 @@
-import {AfterViewInit, Component, ElementRef, Input, OnDestroy, Optional, ViewChild} from '@angular/core';
+import {
+    AfterViewInit, Component, ElementRef, EventEmitter, Input, OnDestroy, Optional, Output,
+    ViewChild
+} from '@angular/core';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {UITimeLineMeter} from '../timeline-meter/timeline-meter';
 
@@ -58,6 +61,7 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
      * current scroll position.
      * @type {number}
      */
+    @Output()
     get scrollPosition(): Observable<number> {
         return this._scrollPosition.asObservable();
     }
@@ -70,6 +74,31 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
     }
 
     @Input() rowHeight: number;
+
+    @Input()
+    set newScrollPosition(p: number) {
+        if (p === this._scrollPosition.getValue() || !this.listContainer.nativeElement) {
+            return;
+        }
+        const scrollHeight = this.holderHeight - this._containerHeight;
+        if (p < 0 || p > scrollHeight) {
+            return;
+        }
+        this.listContainer.nativeElement.scrollTop = p;
+    }
+
+    @Input()
+    set newScrollPercentage(percentage: number) {
+        if (!this.listContainer.nativeElement) {
+            return;
+        }
+        const scrollHeight = this.holderHeight - this._containerHeight;
+        const scrollPosition = percentage * scrollHeight;
+        if (scrollPosition > scrollHeight || scrollPosition < 0 || scrollPosition === this._scrollPosition.getValue()) {
+            return;
+        }
+        this.listContainer.nativeElement.scrollTop = percentage * scrollHeight;
+    }
 
     /**
      * UITimelineMeter is optional injection. when this component used inside a UITimelineMeter.
