@@ -1,3 +1,4 @@
+set -e
 if [ $(npm whoami) != 'lordfriend' ]; then
     echo 'use invalid'
     exit 1;
