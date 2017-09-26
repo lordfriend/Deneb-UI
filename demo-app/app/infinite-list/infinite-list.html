@@ -1,5 +1,5 @@
 <div class="demo-container" *ngIf="collection">
-    <infinite-list [rowHeight]="140" [newScrollPosition]="newPosition">
+    <infinite-list [rowHeight]="140" [newScrollPosition]="newPosition" (scrollPosition)="onScrollPositionChange($event)">
         <list-item-example *infiniteFor="let row of collection; let i = index" [item]="row" [index]="i">
 
         </list-item-example>

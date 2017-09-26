@@ -659,6 +659,9 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
      * @param percentage
      */
     private updatePointedItem(percentage: number) {
+        if (!this._itemList) {
+            return;
+        }
         let heightFromTop = 0;
         let pointedIndex = -1;
         if (percentage === 0) {

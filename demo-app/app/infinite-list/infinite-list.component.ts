@@ -25,6 +25,10 @@ export class InfiniteListDemo implements OnInit {
 
     newPosition = 0;
 
+    onScrollPositionChange(p: number) {
+        console.log(p);
+    }
+
     ngOnInit(): void {
 
         this.newPosition = 5000;
@@ -33,14 +37,14 @@ export class InfiniteListDemo implements OnInit {
             this.collection = MOCK_DATA;
         }, 3000);
 
-        setTimeout(() => {
-            this.collection = MOCK_DATA.filter(item => item.id % 2 === 0);
-            // console.log('current collection', this.collection);
-        }, 5000);
-
-        setTimeout(() => {
-            this.collection = MOCK_DATA.filter(item => true);
-            // console.log('current collection', this.collection);
-        }, 7000);
+        // setTimeout(() => {
+        //     this.collection = MOCK_DATA.filter(item => item.id % 2 === 0);
+        //     // console.log('current collection', this.collection);
+        // }, 5000);
+        //
+        // setTimeout(() => {
+        //     this.collection = MOCK_DATA.filter(item => true);
+        //     // console.log('current collection', this.collection);
+        // }, 7000);
     }
 }

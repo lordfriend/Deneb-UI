@@ -1,11 +1,10 @@
-import {
-    AfterViewInit, Component, ElementRef, EventEmitter, Input, OnDestroy, Optional, Output,
-    ViewChild
-} from '@angular/core';
-import {BehaviorSubject, Observable, Subscription} from 'rxjs';
-import {UITimeLineMeter} from '../timeline-meter/timeline-meter';
+import { AfterViewInit, Component, ElementRef, Input, OnDestroy, Optional, Output, ViewChild } from '@angular/core';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { UITimeLineMeter } from '../timeline-meter/timeline-meter';
 
 export const SCROLL_STOP_TIME_THRESHOLD = 200; // in milliseconds
+
+const INVALID_POSITION = -1;
 
 @Component({
     selector: 'infinite-list',
@@ -25,7 +24,7 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
 
     private ignoreScrollEvent = false;
 
-    private _initialScrollPosition = 0;
+    private _initialScrollTop = INVALID_POSITION;
 
     currentScrollState: SCROLL_STATE = SCROLL_STATE.IDLE;
 
@@ -37,6 +36,15 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
     set holderHeight(height: number) {
         if (height) {
             this._holderHeight = height;
+            // When initialization, the list-holder doesn't not have its height. So the scrollTop should be delayed for waiting
+            // the list-holder rendered bigger than the list-container.
+            console.log('intialScrollTop', this._initialScrollTop);
+            if (this._initialScrollTop !== INVALID_POSITION) {
+                setTimeout(() => {
+                    this.listContainer.nativeElement.scrollTop = this._initialScrollTop;
+                    this._initialScrollTop = INVALID_POSITION;
+                });
+            }
         }
     }
 
@@ -79,15 +87,12 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
 
     @Input()
     set newScrollPosition(p: number) {
-        this._initialScrollPosition = p;
-        if (p === this._scrollPosition.getValue() || !this.listContainer.nativeElement) {
-            return;
-        }
-        const scrollHeight = this.holderHeight - this._containerHeight;
-        if (p < 0 || p > scrollHeight) {
-            return;
-        }
         this.listContainer.nativeElement.scrollTop = p;
+        // if list-holder has no height at the certain time. scrollTop will not be set.
+        if (!this.holderHeight) {
+            this._initialScrollTop = p;
+        }
+        this._scrollPosition.next(p);
     }
 
     /**
@@ -102,7 +107,7 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
 
     ngAfterViewInit(): void {
         if (this.scrollbarStyle === 'hide-scrollbar') {
-            this.listContainer.nativeElement.style.right =  (0 - this.scrollbarWidth)+ 'px';
+            this.listContainer.nativeElement.style.right = (0 - this.scrollbarWidth) + 'px';
             this.listContainer.nativeElement.style.paddingRight = this.scrollbarWidth + 'px';
         }
 
@@ -124,13 +129,17 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
                 return this.listContainer.nativeElement.scrollTop;
             })
             .subscribe((scrollY: number) => {
-                // console.log('on scroll ', scrollY);
+                this._scrollPosition.next(scrollY);
+            }));
+        this._subscription.add(this.scrollPosition
+            .skip(1)
+            .subscribe((scrollY) => {
                 if (this._timelineMeter) {
                     this._timelineMeter.setScrollY(scrollY / (this.holderHeight - this._containerHeight));
                 }
-                this._scrollPosition.next(scrollY);
-            }));
-        this._subscription.add(Observable.fromEvent(this.listContainer.nativeElement, 'scroll')
+            })
+        );
+        this._subscription.add(this.scrollPosition
             .do(() => {
                 if (this.currentScrollState === SCROLL_STATE.IDLE) {
                     this.currentScrollState = SCROLL_STATE.SCROLLING;
@@ -139,7 +148,7 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
             })
             .debounceTime(SCROLL_STOP_TIME_THRESHOLD)
             .subscribe(
-                ()=> {
+                () => {
                     if (this.currentScrollState === SCROLL_STATE.SCROLLING) {
                         this.currentScrollState = SCROLL_STATE.IDLE;
                         this._scrollStateChange.next(this.currentScrollState);
@@ -149,6 +158,7 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
 
         if (this._timelineMeter) {
             this._subscription.add(this._timelineMeter.scrollPosition
+                .skip(1)
                 .map((scrollPercentage: number) => {
                     return scrollPercentage * (this.holderHeight - this._containerHeight);
                 })
@@ -179,14 +189,13 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
         setTimeout(() => {
             this.requestMeasure();
         });
-        this.listContainer.nativeElement.scrollTop = this._initialScrollPosition;
     }
 
     ngOnDestroy(): void {
         this._subscription.unsubscribe();
     }
 
-    measure():{width: number, height: number} {
+    measure(): { width: number, height: number } {
         if (this.listContainer && this.listContainer.nativeElement) {
             // let measuredWidth = this.listContainer.nativeElement.clientWidth;
             // let measuredHeight = this.listContainer.nativeElement.clientHeight;
