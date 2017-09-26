@@ -23,7 +23,11 @@ export class InfiniteListDemo implements OnInit {
 
     collection: {id: number, image: string, content: string}[];
 
+    newPosition = 0;
+
     ngOnInit(): void {
+
+        this.newPosition = 5000;
 
         setTimeout(() => {
             this.collection = MOCK_DATA;

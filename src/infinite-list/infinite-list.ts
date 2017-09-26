@@ -25,6 +25,8 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
 
     private ignoreScrollEvent = false;
 
+    private _initialScrollPosition = 0;
+
     currentScrollState: SCROLL_STATE = SCROLL_STATE.IDLE;
 
     @ViewChild('listContainer') listContainer: ElementRef;
@@ -77,6 +79,7 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
 
     @Input()
     set newScrollPosition(p: number) {
+        this._initialScrollPosition = p;
         if (p === this._scrollPosition.getValue() || !this.listContainer.nativeElement) {
             return;
         }
@@ -85,19 +88,6 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
             return;
         }
         this.listContainer.nativeElement.scrollTop = p;
-    }
-
-    @Input()
-    set newScrollPercentage(percentage: number) {
-        if (!this.listContainer.nativeElement) {
-            return;
-        }
-        const scrollHeight = this.holderHeight - this._containerHeight;
-        const scrollPosition = percentage * scrollHeight;
-        if (scrollPosition > scrollHeight || scrollPosition < 0 || scrollPosition === this._scrollPosition.getValue()) {
-            return;
-        }
-        this.listContainer.nativeElement.scrollTop = percentage * scrollHeight;
     }
 
     /**
@@ -189,6 +179,7 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
         setTimeout(() => {
             this.requestMeasure();
         });
+        this.listContainer.nativeElement.scrollTop = this._initialScrollPosition;
     }
 
     ngOnDestroy(): void {

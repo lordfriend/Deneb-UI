@@ -20,13 +20,6 @@ export class TimelineMeterExample implements OnInit {
     cards: string[];
     timestampList: number[];
 
-    newPosition = 0;
-    newPercentage = 0;
-
-    onScrollChange(p: number) {
-        console.log(p);
-    }
-
     ngOnInit(): void {
         setTimeout(() => {
             let timestamp = Date.now();
@@ -38,13 +31,5 @@ export class TimelineMeterExample implements OnInit {
                 timestamp = Math.floor(timestamp - 3600 * 1000 * 24 * 30 * Math.random() * 3);
             }
         }, 1000);
-
-        setTimeout(() => {
-            this.newPosition = 500;
-        }, 6000);
-
-        setTimeout(() => {
-            this.newPercentage = 0.5;
-        }, 4000);
     }
 }

@@ -1,6 +1,6 @@
 <div class="demo-container">
     <ui-timeline-meter [timestampList]="timestampList" [rowHeight]="40">
-        <infinite-list [rowHeight]="40" [newScrollPosition]="newPosition" [newScrollPercentage]="newPercentage" (scrollPosition)="onScrollChange($event)">
+        <infinite-list [rowHeight]="40">
             <div *infiniteFor="let row of cards" class="demo-card">
                 {{row}}
             </div>
