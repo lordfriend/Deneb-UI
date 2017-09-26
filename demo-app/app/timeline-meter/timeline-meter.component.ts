@@ -20,7 +20,7 @@ export class TimelineMeterExample implements OnInit {
     cards: string[];
     timestampList: number[];
 
-    newPosition = 0;
+    newPosition: number;
 
     onScrollPositionChange(p: number) {
         console.log(p);

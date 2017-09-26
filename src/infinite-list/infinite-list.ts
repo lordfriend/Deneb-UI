@@ -38,7 +38,6 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
             this._holderHeight = height;
             // When initialization, the list-holder doesn't not have its height. So the scrollTop should be delayed for waiting
             // the list-holder rendered bigger than the list-container.
-            console.log('intialScrollTop', this._initialScrollTop);
             if (this._initialScrollTop !== INVALID_POSITION) {
                 setTimeout(() => {
                     this.listContainer.nativeElement.scrollTop = this._initialScrollTop;
@@ -87,6 +86,7 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
 
     @Input()
     set newScrollPosition(p: number) {
+        console.log('p', p);
         this.listContainer.nativeElement.scrollTop = p;
         // if list-holder has no height at the certain time. scrollTop will not be set.
         if (!this.holderHeight) {
