@@ -1,4 +1,7 @@
-import { AfterViewInit, Component, ElementRef, Input, OnDestroy, Optional, Output, ViewChild } from '@angular/core';
+import {
+    AfterViewInit, Component, ElementRef, EventEmitter, Input, OnDestroy, Optional, Output,
+    ViewChild
+} from '@angular/core';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {UITimeLineMeter} from '../timeline-meter/timeline-meter';
 
@@ -75,6 +78,10 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
     @Input()
     set newScrollPosition(p: number) {
         if (p === this._scrollPosition.getValue() || !this.listContainer.nativeElement) {
+            return;
+        }
+        const scrollHeight = this.holderHeight - this._containerHeight;
+        if (p < 0 || p > scrollHeight) {
             return;
         }
         this.listContainer.nativeElement.scrollTop = p;
