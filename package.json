@@ -2,7 +2,7 @@
   "name": "deneb-ui",
   "author": "Bob Yuan",
   "description": "UI building blocks for project Deneb",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "module": "./index.js",
   "repository": "https://github.com/lordfriend/Deneb-UI.git",
   "license": "MIT",
