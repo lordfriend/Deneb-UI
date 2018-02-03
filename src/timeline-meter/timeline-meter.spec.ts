@@ -31,9 +31,10 @@ describe('UITimelineMeter', () => {
         setTimeout(() => {
             fixture.detectChanges();
             let labels = el.querySelectorAll('.render-entity .label');
+            console.log(labels);
             // calculate initial displayed element.
             // let firstPosition = 0;
-            expect(labels.length).toEqual(5);
+            expect(labels.length).toEqual(4);
             done();
         }, 500);
     });
@@ -59,7 +60,7 @@ class TestComponent {
     timestampList: number[];
 
     constructor() {
-        let timestamp = Date.now();
+        let timestamp = new Date('2017-01-30T14:48:00').valueOf();
         this.timestampList = [];
         for(let i = 1; i <= 4 * 12; i++) {
             this.timestampList.push(Math.floor(timestamp - 3600 * 1000 * 24 * 30 * i));
