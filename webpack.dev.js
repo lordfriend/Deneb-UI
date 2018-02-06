@@ -1,9 +1,8 @@
-var helpers = require('./helpers');
-var webpack = require('webpack');
-var ForkCheckerPlugin = require('awesome-typescript-loader').CheckerPlugin;
-var HtmlWebpackPlugin = require('html-webpack-plugin');
-var ContextReplacementPlugin = require('webpack/lib/ContextReplacementPlugin');
-var NormalModuleReplacementPlugin = require('webpack/lib/NormalModuleReplacementPlugin');
+const helpers = require('./helpers');
+const webpack = require('webpack');
+const ForkCheckerPlugin = require('awesome-typescript-loader').CheckerPlugin;
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ContextReplacementPlugin = require('webpack/lib/ContextReplacementPlugin');
 
 module.exports = {
     entry: {
@@ -107,7 +106,7 @@ module.exports = {
          */
         new ContextReplacementPlugin(
             // The (\\|\/) piece accounts for path separators in *nix and Windows
-            /angular(\\|\/)core(\\|\/)(esm(\\|\/)src|src)(\\|\/)linker/,
+            /angular(\\|\/)core(\\|\/)(@angular|esm5)/,
             helpers.root('src') // location of your src
         ),
 
@@ -142,27 +141,6 @@ module.exports = {
                 }
             }
         }),
-        // Fix Angular 2
-        new NormalModuleReplacementPlugin(
-            /facade(\\|\/)async/,
-            helpers.root('node_modules/@angular/core/src/facade/async.js')
-        ),
-        new NormalModuleReplacementPlugin(
-            /facade(\\|\/)collection/,
-            helpers.root('node_modules/@angular/core/src/facade/collection.js')
-        ),
-        new NormalModuleReplacementPlugin(
-            /facade(\\|\/)errors/,
-            helpers.root('node_modules/@angular/core/src/facade/errors.js')
-        ),
-        new NormalModuleReplacementPlugin(
-            /facade(\\|\/)lang/,
-            helpers.root('node_modules/@angular/core/src/facade/lang.js')
-        ),
-        new NormalModuleReplacementPlugin(
-            /facade(\\|\/)math/,
-            helpers.root('node_modules/@angular/core/src/facade/math.js')
-        )
     ],
     // Webpack Development Server configuration
     // Description: The webpack-dev-server is a little node.js Express server.
