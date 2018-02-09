@@ -1,0 +1,44 @@
+<div class="popover-container">
+    <button class="ui button" (click)="openPopover()" #refButton>Open Popover</button>
+    <button class="ui button"
+            ui-popover
+            popover="ui-basic"
+            [popoverProp]="{title: 'Popover Title', content: 'This is content', clickToClose: true}">
+        Popover directive</button>
+    <button class="ui button"
+            ui-popover
+            popover="ui-basic"
+            placement="left"
+            [popoverProp]="{title: 'Popover Title', content: 'This is content', clickToClose: true}">
+        Left Popover
+    </button>
+    <button class="ui button"
+            ui-popover
+            popover="ui-basic"
+            placement="right"
+            [popoverProp]="{title: 'Popover Title', content: 'This is content', clickToClose: true}">
+        Right Popover
+    </button>
+    <button class="ui button"
+            ui-popover
+            popover="ui-basic"
+            placement="top"
+            [popoverProp]="{title: 'Popover Title', content: 'This is content', clickToClose: true}">
+        Top Popover
+    </button>
+    <button class="ui button"
+            ui-popover
+            popover="ui-basic"
+            placement="top-start"
+            [popoverProp]="{title: 'Popover Title', content: 'This is content', clickToClose: true}">
+        Top Start Popover
+    </button>
+    <button class="ui button"
+            ui-popover
+            popover="ui-basic"
+            placement="top-end"
+            [popoverProp]="{title: 'Popover Title', content: 'This is content', clickToClose: true}">
+        Top End Popover
+    </button>
+</div>
+

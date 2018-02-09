@@ -15,5 +15,6 @@ Current implemented component:
 - TimelineMeter
 - Dropdown (directive)
 - Toggle
+- Popover (service and directive), need Popper.js as dependency.
 
 Notice: When you want use toast, you must import `BrowserAnimationsModule` in your application module.

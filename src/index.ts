@@ -1,12 +1,13 @@
-import {NgModule} from '@angular/core';
-import {UIDialogModule} from './dialog/index';
-import {UIToastModule} from './toast/index';
-import {UIPaginationModule} from './pagination/index';
-import {UIInfiniteListModule} from './infinite-list/index';
-import {UITimelineMeterModule} from './timeline-meter/index';
-import {UIScrollbarModule} from './scrollbar/index';
-import {UIDropdownModule} from './dropdown/index';
-import { UIToggleModule } from './toggle/index';
+import { NgModule } from '@angular/core';
+import { UIDialogModule } from './dialog';
+import { UIToastModule } from './toast';
+import { UIPaginationModule } from './pagination';
+import { UIInfiniteListModule } from './infinite-list';
+import { UITimelineMeterModule } from './timeline-meter';
+import { UIScrollbarModule } from './scrollbar';
+import { UIDropdownModule } from './dropdown';
+import { UIToggleModule } from './toggle';
+import { UIPopoverModule } from './popover';
 
 const UI_MODULES = [
     UIDialogModule,
@@ -16,7 +17,8 @@ const UI_MODULES = [
     UITimelineMeterModule,
     UIScrollbarModule,
     UIDropdownModule,
-    UIToggleModule
+    UIToggleModule,
+    UIPopoverModule
 ];
 
 @NgModule({
@@ -35,3 +37,4 @@ export * from './timeline-meter';
 export * from './scrollbar';
 export * from './dropdown';
 export * from './toggle';
+export * from './popover';

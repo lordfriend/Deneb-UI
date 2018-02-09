@@ -14,6 +14,8 @@ import {DropdownDemo} from './dropdown/dropdown.component';
 import {RouterModule} from '@angular/router';
 import { ToggleDemo } from './toggle/toggle.component';
 import { FormsModule } from '@angular/forms';
+import { PopoverComponent } from './popover/popover.component';
+import { PopoverContentComponent } from './popover/popover-content/popover-content.component';
 @NgModule({
     declarations: [
         App,
@@ -25,7 +27,9 @@ import { FormsModule } from '@angular/forms';
         ListItemExample,
         TimelineMeterExample,
         DropdownDemo,
-        ToggleDemo
+        ToggleDemo,
+        PopoverComponent,
+        PopoverContentComponent
     ],
     imports: [
         UIModule,
@@ -60,11 +64,15 @@ import { FormsModule } from '@angular/forms';
             {
                 path: 'toggle',
                 component: ToggleDemo
+            },
+            {
+                path: 'popover',
+                component: PopoverComponent
             }
         ])
     ],
     bootstrap: [App],
-    entryComponents: [ExampleDialog]
+    entryComponents: [ExampleDialog, PopoverContentComponent]
 })
 export class AppModule {
 

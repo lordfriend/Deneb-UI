@@ -2,7 +2,7 @@
   "name": "deneb-ui",
   "author": "Bob Yuan",
   "description": "UI building blocks for project Deneb",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "module": "./index.js",
   "repository": "https://github.com/lordfriend/Deneb-UI.git",
   "license": "MIT",
@@ -64,6 +64,7 @@
     "karma-webpack": "^2.0.9",
     "less": "^2.7.2",
     "less-loader": "^4.0.5",
+    "popper.js": "^1.12.9",
     "raw-loader": "^0.5.1",
     "rimraf": "^2.5.4",
     "run-sequence": "^1.2.2",
@@ -87,6 +88,7 @@
     "npm": ">= 5"
   },
   "peerDependencies": {
-    "@angular/core": ">=4.0.0"
+    "@angular/core": ">=4.0.0",
+    "popper.js": "^1.12.9"
   }
 }
