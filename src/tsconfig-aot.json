@@ -4,7 +4,7 @@
     "module": "commonjs",
     "target": "es5",
     "sourceMap": true,
-    "noEmitHelpers": true,
+    "noEmitHelpers": false,
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
