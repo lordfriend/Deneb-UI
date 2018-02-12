@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, HostListener, Input, OnDestroy } from '@angular/core';
+import { AfterViewInit, Component, HostBinding, HostListener, Input, OnDestroy } from '@angular/core';
 import { Popover } from '../register';
 import { Subscription } from 'rxjs/Subscription';
 import { UIPopoverRef } from '../popover-ref';
@@ -22,6 +22,9 @@ export class BasicPopoverComponent extends UIPopoverContent implements AfterView
 
     @Input()
     clickToClose: boolean;
+
+    @HostBinding('style.zIndex')
+    zIndex: number;
 
     placement: string;
 
