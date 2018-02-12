@@ -1,6 +1,5 @@
 <div class="ui-basic-popover" [ngClass]="placement">
-    <div class="popover-title" *ngIf="!!title">{{title}}</div>
-    <div class="popover-content">
-        {{content}}
+    <div class="popover-title" *ngIf="!!title" [innerHTML]="title"></div>
+    <div class="popover-content" [innerHTML]="content">
     </div>
 </div>
