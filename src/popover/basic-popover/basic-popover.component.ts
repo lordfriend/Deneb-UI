@@ -24,7 +24,7 @@ export class BasicPopoverComponent extends UIPopoverContent implements AfterView
     clickToClose: boolean;
 
     @Input()
-    triggeredBy: 'click' | 'alwaysOn';
+    triggeredBy: 'click' | 'alwaysOn' = 'click';
 
     @HostBinding('style.zIndex')
     zIndex: number;
