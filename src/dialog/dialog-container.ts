@@ -65,7 +65,7 @@ export class UIDialogContainer {
     }
 
     attachDialogContent<T>(componentRef: ComponentRef<T>) {
-        console.log(this._viewContainer.element.nativeElement);
+        // console.log(this._viewContainer.element.nativeElement);
         this._viewContainer.insert(componentRef.hostView);
     }
 }

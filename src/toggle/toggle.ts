@@ -39,7 +39,7 @@ export class UIToggle implements ControlValueAccessor {
             if (!this.ready) {
                 this.ready = true;
             }
-            console.log(value);
+            // console.log(value);
             this.checked = !!value;
         }
     }

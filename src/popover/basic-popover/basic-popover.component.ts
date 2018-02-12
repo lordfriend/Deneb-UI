@@ -23,6 +23,9 @@ export class BasicPopoverComponent extends UIPopoverContent implements AfterView
     @Input()
     clickToClose: boolean;
 
+    @Input()
+    triggeredBy: 'click' | 'alwaysOn';
+
     @HostBinding('style.zIndex')
     zIndex: number;
 
@@ -61,9 +64,10 @@ export class BasicPopoverComponent extends UIPopoverContent implements AfterView
     ngAfterViewInit(): void {
         super.ngAfterViewInit();
         if (this.clickToClose) {
+            let skipCount = this.triggeredBy === 'click' ? 1: 0;
             this._subscription.add(
                 Observable.fromEvent(document.body, 'click')
-                    .skip(1)
+                    .skip(skipCount)
                     .subscribe(() => {
                         this.popoverRef.close();
                     })

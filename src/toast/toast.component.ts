@@ -42,7 +42,7 @@ export class UIToastComponent implements OnDestroy, UIToastAnimation {
     constructor(private _toastRef: UIToastRef<UIToastComponent>) {}
 
     ngOnDestroy(): void {
-        console.log('destroyed');
+        // console.log('destroyed');
     }
 
     uiLeaveAnimationDone(event: AnimationTransitionEvent) {

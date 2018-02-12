@@ -86,7 +86,7 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
 
     @Input()
     set newScrollPosition(p: number) {
-        console.log('p', p);
+        // console.log('p', p);
         this.listContainer.nativeElement.scrollTop = p;
         // if list-holder has no height at the certain time. scrollTop will not be set.
         if (!this.holderHeight) {

@@ -86,7 +86,7 @@ export class UIScrollbar implements AfterViewInit, OnChanges, OnDestroy {
                     this._isDrag = event.clientY > scrollbarThumbOffset && event.clientY < scrollbarThumbOffset + this.scrollbarThumbHeight;
                     if (!this._isDrag) {
                         this._finalY = event.clientY - this.scrollbarRect.top;
-                        console.log(this._finalY);
+                        // console.log(this._finalY);
                         this.smoothScrollTo();
                         this._dragStartOffset = 0;
                     } else {

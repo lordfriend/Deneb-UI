@@ -31,7 +31,7 @@ describe('UITimelineMeter', () => {
         setTimeout(() => {
             fixture.detectChanges();
             let labels = el.querySelectorAll('.render-entity .label');
-            console.log(labels);
+            // console.log(labels);
             // calculate initial displayed element.
             // let firstPosition = 0;
             expect(labels.length).toEqual(4);
