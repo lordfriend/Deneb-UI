@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {UIDialogRef} from '../../../../src/dialog/dialog-ref';
 import {UIDialog} from '../../../../src/dialog/dialog';
 @Component({
@@ -35,9 +35,11 @@ import {UIDialog} from '../../../../src/dialog/dialog';
 })
 export class ExampleDialog {
 
-    constructor(public dialogRef: UIDialogRef<ExampleDialog>, public dialog: UIDialog) {}
-
+    @Input()
+    boundContent: string;
     result: string;
+
+    constructor(public dialogRef: UIDialogRef<ExampleDialog>, public dialog: UIDialog) {}
 
     openNewDialog() {
         let ref = this.dialog.open(ExampleDialog, this.dialogRef.config);

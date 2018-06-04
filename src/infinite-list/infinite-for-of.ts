@@ -270,11 +270,9 @@ export class InfiniteForOf<T> implements OnChanges, DoCheck, OnInit, OnDestroy {
     }
 
     private measure() {
-        if (!this._collection || this._collection.length === 0) {
-            return;
-        }
+        let collectionNumber = !this._collection || this._collection.length === 0 ? 0 : this._collection.length;
         this._isInMeasure = true;
-        this._infiniteList.holderHeight = this._infiniteList.rowHeight * this._collection.length;
+        this._infiniteList.holderHeight = this._infiniteList.rowHeight * collectionNumber;
         // calculate a approximate number of which a view can contain
         this.calculateScrapViewsLimit();
         this._isInMeasure = false;
@@ -283,7 +281,7 @@ export class InfiniteForOf<T> implements OnChanges, DoCheck, OnInit, OnDestroy {
     }
 
     private layout() {
-        if (this._isInLayout || !this._collection || this._collection.length === 0) {
+        if (this._isInLayout) {
             return;
         }
         // console.log('on layout');
@@ -291,6 +289,20 @@ export class InfiniteForOf<T> implements OnChanges, DoCheck, OnInit, OnDestroy {
         let {width, height} = this._infiniteList.measure();
         this._containerWidth = width;
         this._containerHeight = height;
+        if (!this._collection || this._collection.length === 0) {
+            // detach all views without recycle them.
+            for (let i = 0; i < this._viewContainerRef.length; i++) {
+                let child = <EmbeddedViewRef<InfiniteRow>> this._viewContainerRef.get(i);
+                // if (child.context.index < this._firstItemPosition || child.context.index > this._lastItemPosition || this._invalidate) {
+                this._viewContainerRef.detach(i);
+                // this._recycler.recycleView(child.context.index, child);
+                i--;
+                // }
+            }
+            this._isInLayout = false;
+            this._invalidate = false;
+            return;
+        }
         this.findPositionInRange();
         for (let i = 0; i < this._viewContainerRef.length; i++) {
             let child = <EmbeddedViewRef<InfiniteRow>> this._viewContainerRef.get(i);

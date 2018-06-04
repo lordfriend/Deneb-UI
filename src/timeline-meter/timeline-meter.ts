@@ -134,9 +134,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
             }
             return item;
         });
-        if (this._itemList && this._itemList.length > 0) {
-            this.buildMeter();
-        }
+        this.buildMeter();
     }
 
     /**
@@ -379,9 +377,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                 });
                 this.contentHeight = rowHeight * timestampList.length;
             }
-            if (this._itemList && this._itemList.length > 0) {
-                this.buildMeter();
-            }
+            this.buildMeter();
 
         }
         if ('showMarker' in changes && !this._isBuilding && !this._isInMeasure) {
@@ -523,6 +519,12 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
             return;
         }
         this._isBuilding = true;
+        if (!this._itemList || this._itemList.length === 0) {
+            this.labelList = [];
+            this.renderEntityList = [];
+            this._isBuilding = false;
+            return;
+        }
         // performance.mark('start_building');
         this.labelList = [];
         let lastLabel = new Label();
@@ -659,7 +661,7 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
      * @param percentage
      */
     private updatePointedItem(percentage: number) {
-        if (!this._itemList) {
+        if (!this._itemList || this._itemList.length === 0) {
             return;
         }
         let heightFromTop = 0;

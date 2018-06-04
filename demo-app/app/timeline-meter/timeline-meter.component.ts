@@ -38,5 +38,10 @@ export class TimelineMeterExample implements OnInit {
                 timestamp = Math.floor(timestamp - 3600 * 1000 * 24 * 30 * Math.random() * 3);
             }
         }, 2000);
+
+        setTimeout(() => {
+            this.timestampList = [];
+            this.cards = [];
+        }, 4000);
     }
 }

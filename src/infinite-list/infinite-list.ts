@@ -34,11 +34,14 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
     scrollbarWidth: number;
 
     set holderHeight(height: number) {
-        if (height) {
+        if (typeof height !== 'undefined') {
             this._holderHeight = height;
+            if (this._holderHeight === 0) {
+                this.listContainer.nativeElement.scrollTop = 0;
+            }
             // When initialization, the list-holder doesn't not have its height. So the scrollTop should be delayed for waiting
             // the list-holder rendered bigger than the list-container.
-            if (this._initialScrollTop !== INVALID_POSITION) {
+            if (this._initialScrollTop !== INVALID_POSITION && this._holderHeight !== 0) {
                 setTimeout(() => {
                     this.listContainer.nativeElement.scrollTop = this._initialScrollTop;
                     this._initialScrollTop = INVALID_POSITION;
