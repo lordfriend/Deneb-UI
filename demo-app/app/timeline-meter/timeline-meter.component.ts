@@ -39,9 +39,9 @@ export class TimelineMeterExample implements OnInit {
             }
         }, 2000);
 
-        setTimeout(() => {
-            this.timestampList = [];
-            this.cards = [];
-        }, 4000);
+        // setTimeout(() => {
+        //     this.timestampList = [];
+        //     this.cards = [];
+        // }, 4000);
     }
 }
