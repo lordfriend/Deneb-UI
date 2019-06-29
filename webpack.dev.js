@@ -1,7 +1,7 @@
 const helpers = require('./helpers');
 const webpack = require('webpack');
-const ForkCheckerPlugin = require('awesome-typescript-loader').CheckerPlugin;
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const ContextReplacementPlugin = require('webpack/lib/ContextReplacementPlugin');
 
 module.exports = {
@@ -30,9 +30,18 @@ module.exports = {
         // rules for modules (configure loaders, parser options, etc.)
             {
                 test: /\.ts$/,
-                exclude: [/\.(spec|e2e)\.ts$/],
+                exclude: [
+                    /\.(spec|e2e)\.ts$/,
+                    /node_modules/
+                ],
                 use: [
-                    'awesome-typescript-loader',
+                    {
+                        loader: 'ts-loader',
+                        options: {
+                            configFile: helpers.root('tsconfig.json'),
+                            transpileOnly: true
+                        }
+                    },
                     'angular2-template-loader'
                 ]
             },
@@ -48,7 +57,8 @@ module.exports = {
             {
                 test: /.less$/,
                 use: [
-                    'raw-loader',
+                    'to-string-loader',
+                    'css-loader',
                     'less-loader'
                 ],
                 include: [/src[\/\\]/]
@@ -66,7 +76,7 @@ module.exports = {
             },
             {
                 test: /\.html$/,
-                use: 'raw-loader',
+                use: 'html-loader',
                 exclude: [helpers.root('src/index.html')]
             },
             {
@@ -96,7 +106,6 @@ module.exports = {
         ]
     },
     plugins: [
-        new ForkCheckerPlugin(),
         /**
          * Plugin: ContextReplacementPlugin
          * Description: Provides context to Angular's use of System.import
@@ -104,11 +113,13 @@ module.exports = {
          * See: https://webpack.github.io/docs/list-of-plugins.html#contextreplacementplugin
          * See: https://github.com/angular/angular/issues/11580
          */
-        new ContextReplacementPlugin(
-            // The (\\|\/) piece accounts for path separators in *nix and Windows
-            /angular(\\|\/)core(\\|\/)(@angular|esm5)/,
-            helpers.root('src') // location of your src
-        ),
+        // new ContextReplacementPlugin(
+        //     // The (\\|\/) piece accounts for path separators in *nix and Windows
+        //     /angular(\\|\/)core(\\|\/)(@angular|esm5)/,
+        //     helpers.root('src') // location of your src
+        // ),
+
+        new CleanWebpackPlugin(),
 
         // Plugin: HtmlWebpackPlugin
         // Description: Simplifies creation of HTML files to serve your webpack bundles.

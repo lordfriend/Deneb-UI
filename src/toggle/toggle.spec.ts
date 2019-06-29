@@ -1,7 +1,8 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed, fakeAsync, tick, flushMicrotasks } from '@angular/core/testing';
+import { click } from '../test-helper';
 import { UIToggleModule } from './index';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { Component, DebugElement } from '@angular/core';
+import { FormsModule, NgModel } from '@angular/forms';
+import { Component, ContentChild, DebugElement, ElementRef, ViewChild } from '@angular/core';
 import { UIToggle } from './toggle';
 import { By } from '@angular/platform-browser';
 describe('UIToggle', () => {
@@ -15,7 +16,7 @@ describe('UIToggle', () => {
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            imports: [UIToggleModule, FormsModule, ReactiveFormsModule],
+            imports: [UIToggleModule, FormsModule],
             declarations: [
                 NgModelBasic
             ]
@@ -25,39 +26,46 @@ describe('UIToggle', () => {
     }));
 
     describe('ngModel basic', () => {
-        let testDebugElement: DebugElement;
-        let testNativeElement: HTMLElement;
         let testInstance: NgModelBasic;
-        let labelElement: HTMLLabelElement;
+        let labelElement: HTMLElement;
+        let toggle: UIToggle;
 
-        beforeEach(() => {
+        it('should change value of NgModelBasic by clicking the UIToggle', fakeAsync(() => {
             fixture = TestBed.createComponent(NgModelBasic);
+            testInstance = fixture.componentInstance;
+            labelElement = fixture.debugElement.query(By.css('label')).nativeElement;
+            toggle = fixture.debugElement.query(By.directive(UIToggle)).componentInstance;
+
+            testInstance.value = true;
             fixture.detectChanges();
 
-            testDebugElement = fixture.debugElement;
-            testNativeElement = testDebugElement.nativeElement;
-            testInstance = testDebugElement.componentInstance;
-            labelElement = testNativeElement.querySelector('label');
-        });
+            // Flush the microtasks because the forms module updates the model state asynchronously.
+            flushMicrotasks();
+            // Now the new checked variable has been updated in the toggle and the toggle
+            // is marked for check because it still needs to update the underlying input.
+            fixture.detectChanges();
 
-        it('should change value of NgModelBasic by clicking the UIToggle', async() => {
-            expect(testInstance.value).toBe(false);
+            expect(toggle.checked).toBe(true, 'Expected toggle to be checked initially');
+
             labelElement.click();
+
             fixture.detectChanges();
-            fixture.whenStable()
-                .then(() => {
-                    expect(testInstance.value).toBe(true);
-                });
-        });
+
+            tick();
+
+            expect(toggle.checked).toBe(false, 'Expected toggle to be no longer checked after label click.');
+        }));
     });
 });
 
 @Component({
     template: `
         <form>
-            <ui-toggle [(ngModel)]="value" name="toggle1"></ui-toggle>
+            <ui-toggle [(ngModel)]="value" name="toggle1" (change)="onChange()"></ui-toggle>
         </form>`
 })
 class NgModelBasic {
-    value = false;
+    value: boolean;
+    onChange: () => void = () => {};
+    @ViewChild(UIToggle) toggle: UIToggle;
 }

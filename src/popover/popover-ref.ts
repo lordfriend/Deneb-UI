@@ -1,7 +1,6 @@
-import Popper from "popper.js";
 import { ApplicationRef, ComponentRef, EmbeddedViewRef } from '@angular/core';
-import { Subject } from 'rxjs/Subject';
-import { Observable } from 'rxjs/Observable';
+import Popper from "popper.js";
+import { Observable, Subject } from 'rxjs';
 
 export class UIPopoverRef<T> {
     private _popper: Popper;

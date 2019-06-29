@@ -9,6 +9,7 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "strictNullChecks": false,
+    "importHelpers": true,
     "baseUrl": "./src",
     "paths": {
     },
@@ -16,6 +17,9 @@
       "dom",
       "es6",
       "es2015"
+    ],
+    "typeRoots": [
+      "node_modules/@types"
     ]
   },
   "exclude": [

@@ -1,5 +1,4 @@
 import {
-    AnimationTransitionEvent,
     Component,
     EventEmitter,
     Input,
@@ -7,7 +6,7 @@ import {
     Output,
     ViewEncapsulation
 } from '@angular/core';
-import {animate, state, style, transition, trigger} from '@angular/animations';
+import {animate, state, style, transition, trigger, AnimationEvent} from '@angular/animations';
 import {UIToastRef} from './toast-ref';
 import {UIToastAnimation} from './toast-interface';
 
@@ -45,7 +44,7 @@ export class UIToastComponent implements OnDestroy, UIToastAnimation {
         // console.log('destroyed');
     }
 
-    uiLeaveAnimationDone(event: AnimationTransitionEvent) {
+    uiLeaveAnimationDone(event: AnimationEvent) {
         if (event.toState === 'void') {
             this.animationEvent.emit(null);
         }

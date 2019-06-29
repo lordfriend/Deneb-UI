@@ -1,6 +1,7 @@
 // Optional is unused here but in order to emit declaration files, we need to import it.
 // https://github.com/Microsoft/TypeScript/issues/9944#issuecomment-244448079
 import {
+    Optional,
     ApplicationRef,
     ComponentFactoryResolver,
     ComponentRef,

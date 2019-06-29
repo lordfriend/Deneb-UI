@@ -1,8 +1,8 @@
-import 'core-js/es7/reflect';
+import 'core-js/es7/reflect'; // do not use core-js > 2.6
 import 'zone.js/dist/zone';
 
 // Typescript emit helpers polyfill
-import 'ts-helpers';
+// import 'ts-helpers';
 
 Error.stackTraceLimit = Infinity;
 

@@ -1,9 +1,9 @@
 const helpers = require('./helpers');
 const webpack = require('webpack');
-const ForkCheckerPlugin = require('awesome-typescript-loader').CheckerPlugin;
 const ContextReplacementPlugin = require('webpack/lib/ContextReplacementPlugin');
 
 module.exports = {
+    mode: 'development',
     entry: {
         main: './test-entry.js'
     },
@@ -14,7 +14,7 @@ module.exports = {
             helpers.root('node_modules')
         ]
     },
-    devtool: 'source-map',
+    devtool: 'inline-source-map',
     output: {
         path: helpers.root('dist'),
         filename: '[name].js',
@@ -39,16 +39,10 @@ module.exports = {
                 test: /\.ts$/,
                 use: [
                     {
-                        loader: 'awesome-typescript-loader',
-                        query: {
-                            // use inline sourcemaps for 'karma-remap-coverage' reporter
-                            sourceMap: false,
-                            inlineSourceMap: true,
-                            compileOptions: {
-                                // Remove Typescript helpers to be injected
-                                // below by DefinePlugin
-                                removeComments: true
-                            }
+                        loader: 'ts-loader',
+                        options: {
+                            transpileOnly: true,
+                            configFile: helpers.root('tsconfig.json')
                         }
                     },
                     {
@@ -56,6 +50,10 @@ module.exports = {
                     }
                 ],
                 exclude: [/\.e2e\.ts$/]
+            },
+            {
+                test: /[\/\\]@angular[\/\\]core[\/\\].+\.js$/,
+                parser: { system: true },
             },
             {
                 test: /\.less$/,
@@ -69,7 +67,8 @@ module.exports = {
             {
                 test: /.less$/,
                 use: [
-                    'raw-loader',
+                    'to-string-loader',
+                    'css-loader',
                     'less-loader'
                 ],
                 include: [/src[\/\\]/]
@@ -87,13 +86,12 @@ module.exports = {
             },
             {
                 test: /\.html$/,
-                use: 'raw-loader',
+                use: 'html-loader',
                 exclude: [helpers.root('src/index.html')]
             }
         ]
     },
     plugins: [
-        new ForkCheckerPlugin(),
         /**
          * Plugin: ContextReplacementPlugin
          * Description: Provides context to Angular's use of System.import
@@ -103,7 +101,7 @@ module.exports = {
          */
         new ContextReplacementPlugin(
             // The (\\|\/) piece accounts for path separators in *nix and Windows
-            /angular(\\|\/)core(\\|\/)(@angular|esm5)/,
+            /@angular(\\|\/)core(\\|\/)f?esm5/,
             helpers.root('src') // location of your src
         ),
 

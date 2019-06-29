@@ -1,6 +1,6 @@
+
+import {fromEvent as observableFromEvent,  Subscription ,  Observable } from 'rxjs';
 import { AfterViewInit, Component, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
-import { Observable } from 'rxjs/Observable';
 
 require('semantic-ui-less/definitions/modules/transition.less');
 require('semantic-ui-less/definitions/collections/menu.less');
@@ -15,7 +15,7 @@ export class DropdownDemo implements AfterViewInit, OnDestroy {
 
     ngAfterViewInit(): void {
         this._subscription.add(
-            Observable.fromEvent(document, 'click')
+            observableFromEvent(document, 'click')
                 .subscribe(
                     () => {
                         console.log('document clicked');

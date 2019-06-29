@@ -1,7 +1,15 @@
-import { Component, Input, ExistingProvider, forwardRef } from '@angular/core';
+import { Component, Input, ExistingProvider, forwardRef, Output, EventEmitter } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 let nextId = 0;
+
+export class UIToggleChange {
+    constructor(
+        /** The source UIToggle of the event. */
+        public source: UIToggle,
+        /** The new `checked` value of the UIToggle. */
+        public checked: boolean) { }
+}
 
 export const UI_TOGGLE_VALUE_ACCESSOR: ExistingProvider = {
     provide: NG_VALUE_ACCESSOR,
@@ -28,6 +36,9 @@ export class UIToggle implements ControlValueAccessor {
     @Input()
     text: string;
 
+    @Output()
+    readonly change = new EventEmitter<UIToggleChange>();
+
     private _onChangeHandler = (_: any) => {};
 
     toggle(): void {
@@ -39,7 +50,6 @@ export class UIToggle implements ControlValueAccessor {
             if (!this.ready) {
                 this.ready = true;
             }
-            // console.log(value);
             this.checked = !!value;
         }
     }
@@ -60,6 +70,7 @@ export class UIToggle implements ControlValueAccessor {
             this.ready =  true;
             this.toggle();
             this._onChangeHandler(this.checked);
+            this.change.emit(new UIToggleChange(this, this.checked));
         }
     }
 }

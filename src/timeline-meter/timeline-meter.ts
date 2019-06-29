@@ -1,8 +1,11 @@
+
+import {fromEvent as observableFromEvent, BehaviorSubject, Observable, Subscription} from 'rxjs';
+
+import {debounceTime, tap, takeUntil, map, mergeMap, filter} from 'rxjs/operators';
 import {
     AfterViewInit, Component, ElementRef, Input, OnChanges, OnDestroy, Optional, SimpleChanges,
     ViewChild
 } from '@angular/core';
-import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {isInRect} from '../core/helpers';
 import {SCROLL_STATE, SCROLL_STOP_TIME_THRESHOLD} from '../infinite-list/infinite-list';
 
@@ -168,18 +171,18 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         let renderWrapper = this.renderWrapper.nativeElement;
         // for mouse event
         this._subscription.add(
-            Observable.fromEvent(meterEl, 'mousedown')
-                .filter(() => {
+            observableFromEvent(meterEl, 'mousedown').pipe(
+                filter(() => {
                     return this.timestampList && this.timestampList.length > 0;
-                })
-                .flatMap((event: MouseEvent) => {
+                }),
+                mergeMap((event: MouseEvent) => {
                     event.preventDefault();
-                    return Observable.fromEvent(document, 'mousemove')
-                        .takeUntil(Observable.fromEvent(document, 'mouseup'));
-                })
-                .map((event: MouseEvent) => {
+                    return observableFromEvent(document, 'mousemove').pipe(
+                        takeUntil(observableFromEvent(document, 'mouseup')));
+                }),
+                map((event: MouseEvent) => {
                     return Math.max(0, Math.min(event.clientY - renderWrapper.getBoundingClientRect().top, this.availableHeight));
-                })
+                }),)
                 .subscribe((pos: number) => {
                     this.scrollTo(pos);
                 })
@@ -187,13 +190,13 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
 
         // for click
         this._subscription.add(
-            Observable.fromEvent(meterEl, 'click')
-                .filter(() => {
+            observableFromEvent(meterEl, 'click').pipe(
+                filter(() => {
                     return this.timestampList && this.timestampList.length > 0;
-                })
-                .map((event: MouseEvent) => {
+                }),
+                map((event: MouseEvent) => {
                     return Math.max(0, Math.min(event.clientY - renderWrapper.getBoundingClientRect().top, this.availableHeight));
-                })
+                }),)
                 .subscribe(
                     (pos: number) => {
                         this.scrollTo(pos);
@@ -203,31 +206,31 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
 
         // for touch event
         this._subscription.add(
-            Observable.fromEvent(renderWrapper, 'touchstart')
-                .filter(() => {
+            observableFromEvent(renderWrapper, 'touchstart').pipe(
+                filter(() => {
                     return this.timestampList && this.timestampList.length > 0;
-                })
-                .do(() => {
+                }),
+                tap(() => {
                     this.showTooltip = true;
-                })
-                .map((event: TouchEvent) => {
+                }),
+                map((event: TouchEvent) => {
                     event.preventDefault();
                     return event.touches[0].clientY;
-                })
-                .flatMap(() => {
-                    return Observable.fromEvent(renderWrapper, 'touchmove')
-                        .map((event: TouchEvent) => {
+                }),
+                mergeMap(() => {
+                    return observableFromEvent(renderWrapper, 'touchmove').pipe(
+                        map((event: TouchEvent) => {
                             event.preventDefault();
                             return event.touches[0].clientY;
-                        })
-                        .takeUntil(
-                            Observable.fromEvent(renderWrapper, 'touchend')
-                                .map((event: TouchEvent) => {
+                        }),
+                        takeUntil(
+                            observableFromEvent(renderWrapper, 'touchend').pipe(
+                                map((event: TouchEvent) => {
                                     event.preventDefault();
                                     return event.changedTouches[0].clientY;
-                                })
-                        )
-                        .do(
+                                }))
+                        ),
+                        tap(
                             () => {
                             },
                             () => {
@@ -235,8 +238,8 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                             () => {
                                 this.showTooltip = false;
                             }
-                        );
-                })
+                        ),);
+                }),)
                 .subscribe(
                     (viewportOffsetY: number) => {
                         let rect = this.renderWrapper.nativeElement.getBoundingClientRect();
@@ -249,8 +252,8 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         );
 
         if (window) {
-            this._subscription.add(Observable.fromEvent(window, 'resize')
-                .debounceTime(300)
+            this._subscription.add(observableFromEvent(window, 'resize').pipe(
+                debounceTime(300))
                 .subscribe(
                     () => {
                         this.measure();
@@ -259,14 +262,14 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         }
 
         this._subscription.add(
-            Observable.fromEvent(container, 'mouseenter')
-                .filter(() => {
+            observableFromEvent(container, 'mouseenter').pipe(
+                filter(() => {
                     return this.timestampList && this.timestampList.length > 0;
-                })
-                .flatMap(() => {
-                    return Observable.fromEvent(container, 'mousemove')
-                        .takeUntil(Observable.fromEvent(container, 'mouseleave'))
-                        .do(
+                }),
+                mergeMap(() => {
+                    return observableFromEvent(container, 'mousemove').pipe(
+                        takeUntil(observableFromEvent(container, 'mouseleave')),
+                        tap(
                             () => {
                             },
                             () => {
@@ -274,9 +277,9 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                             () => {
                                 this.showTooltip = false;
                             }
-                        );
-                })
-                .filter(() => this.contentScrollState === SCROLL_STATE.IDLE) // skip when scroll state is scrolling.
+                        ),);
+                }),
+                filter(() => this.contentScrollState === SCROLL_STATE.IDLE),) // skip when scroll state is scrolling.
                 .subscribe(
                     (event: MouseEvent) => {
                         let meterRect = meterEl.getBoundingClientRect();
@@ -296,12 +299,12 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
         let lastScrollTime = 0;
         let lastScrollPos = 0;
         this._subscription.add(
-            this._onContentScroll
-                .filter(() => {
+            this._onContentScroll.pipe(
+                filter(() => {
                     return this.timestampList && this.timestampList.length > 0;
-                })
-                .filter((scrollPercentage: number) => scrollPercentage !== -1)
-                .map((scrollPercentage: number) => {
+                }),
+                filter((scrollPercentage: number) => scrollPercentage !== -1),
+                map((scrollPercentage: number) => {
                     let currentTime = performance.now();
                     let velocity = 0;
                     let averageRowHeight = this.contentHeight / this._itemList.length;
@@ -312,13 +315,13 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
                     lastScrollTime = currentTime;
                     lastScrollPos = scrollPercentage;
                     return velocity;
-                })
-                .do((velocity: number) => {
+                }),
+                tap((velocity: number) => {
                     if (velocity > MIN_VELOCITY) {
                         this.showTooltip = true;
                     }
-                })
-                .debounceTime(TOOLTIP_FADE_TIME)
+                }),
+                debounceTime(TOOLTIP_FADE_TIME),)
                 .subscribe(
                     (velocity) => {
                         if (this.showTooltip) {
@@ -329,13 +332,13 @@ export class UITimeLineMeter implements AfterViewInit, OnDestroy, OnChanges {
 
         // track the scroll state change
         this._subscription.add(
-            this._onContentScroll
-                .do(() => {
+            this._onContentScroll.pipe(
+                tap(() => {
                     if (this.contentScrollState === SCROLL_STATE.IDLE) {
                         this.contentScrollState = SCROLL_STATE.SCROLLING;
                     }
-                })
-                .debounceTime(SCROLL_STOP_TIME_THRESHOLD)
+                }),
+                debounceTime(SCROLL_STOP_TIME_THRESHOLD),)
                 .subscribe(
                     ()=> {
                         if (this.contentScrollState === SCROLL_STATE.SCROLLING) {

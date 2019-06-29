@@ -22,10 +22,10 @@ require('zone.js/dist/async-test');
 require('zone.js/dist/fake-async-test');
 
 // Typescript emit helpers polyfill
-require('ts-helpers');
+// require('ts-helpers');
 
 // RxJS
-require('rxjs/Rx');
+require('rxjs');
 
 var testing = require('@angular/core/testing');
 var browser = require('@angular/platform-browser-dynamic/testing');

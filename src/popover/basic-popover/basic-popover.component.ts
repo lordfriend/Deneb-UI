@@ -1,8 +1,10 @@
+
+import {fromEvent as observableFromEvent,  Subscription ,  Observable } from 'rxjs';
+
+import {skip} from 'rxjs/operators';
 import { AfterViewInit, Component, HostBinding, HostListener, Input, OnDestroy } from '@angular/core';
 import { Popover } from '../register';
-import { Subscription } from 'rxjs/Subscription';
 import { UIPopoverRef } from '../popover-ref';
-import { Observable } from 'rxjs/Observable';
 import { UIPopoverContent } from '../popover-content';
 
 @Popover('ui-basic')
@@ -66,8 +68,8 @@ export class BasicPopoverComponent extends UIPopoverContent implements AfterView
         if (this.clickToClose) {
             let skipCount = this.triggeredBy === 'click' ? 1: 0;
             this._subscription.add(
-                Observable.fromEvent(document.body, 'click')
-                    .skip(skipCount)
+                observableFromEvent(document.body, 'click').pipe(
+                    skip(skipCount))
                     .subscribe(() => {
                         this.popoverRef.close();
                     })
