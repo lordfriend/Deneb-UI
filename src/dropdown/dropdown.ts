@@ -1,5 +1,8 @@
+
+import {fromEvent as observableFromEvent,  Observable, Subscription } from 'rxjs';
+
+import {takeUntil, delay, takeWhile, mergeMap, tap} from 'rxjs/operators';
 import { Directive, ElementRef, HostListener, Input, OnDestroy, OnInit } from '@angular/core';
-import { Observable, Subscription } from 'rxjs';
 
 @Directive({
     selector: '[uiDropdown]',
@@ -57,7 +60,7 @@ export class UIDropdown implements OnInit, OnDestroy {
     ngOnInit(): void {
         let _el = this._element.nativeElement;
         this._subscription.add(
-            Observable.fromEvent(document.body, 'click')
+            observableFromEvent(document.body, 'click')
                 .subscribe((event: MouseEvent) => {
                     if (event.timeStamp !== this._timestamp && this.menuOpen) {
                         event.preventDefault();
@@ -68,18 +71,18 @@ export class UIDropdown implements OnInit, OnDestroy {
         );
         if (this.uiDropdown === 'hover') {
             this._subscription.add(
-                Observable.fromEvent(_el, 'mouseenter')
-                    .do((event: MouseEvent) => {
+                observableFromEvent(_el, 'mouseenter').pipe(
+                    tap((event: MouseEvent) => {
                         event.preventDefault();
                         event.stopPropagation();
                         this.menuOpen = true;
-                    })
-                    .flatMap(() => {
-                        return Observable.fromEvent(_el, 'mouseleave')
-                            .takeWhile(() => this.menuOpen)
-                            .delay(300)
-                            .takeUntil(Observable.fromEvent(_el, 'mouseenter'));
-                    })
+                    }),
+                    mergeMap(() => {
+                        return observableFromEvent(_el, 'mouseleave').pipe(
+                            takeWhile(() => this.menuOpen),
+                            delay(300),
+                            takeUntil(observableFromEvent(_el, 'mouseenter')),);
+                    }),)
                     .subscribe(
                         () => {
                             this.menuOpen = false;

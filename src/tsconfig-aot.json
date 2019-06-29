@@ -11,6 +11,7 @@
     "allowSyntheticDefaultImports": true,
     "strictNullChecks": false,
     "inlineSources": true,
+    "importHelpers": true,
     "stripInternal": false,
     "baseUrl": "",
     "rootDir": ".",
@@ -27,7 +28,8 @@
     ]
   },
   "exclude": [
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "test-helper.ts"
   ],
   "awesomeTypescriptLoaderOptions": {
     "forkChecker": true,
@@ -36,7 +38,8 @@
   "angularCompilerOptions": {
     "genDir": "../dist",
     "skipTemplateCodegen": true,
-    "skipMetadataEmit": false
+    "skipMetadataEmit": false,
+    "preserveWhitespaces": false
   },
   "compileOnSave": false,
   "buildOnSave": false,

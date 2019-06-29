@@ -1,3 +1,5 @@
+
+import {filter} from 'rxjs/operators';
 import {
     Directive,
     DoCheck,
@@ -226,10 +228,10 @@ export class InfiniteForOf<T> implements OnChanges, DoCheck, OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this._subscription.add(this._infiniteList.scrollPosition
-            .filter((scrollY) => {
+        this._subscription.add(this._infiniteList.scrollPosition.pipe(
+            filter((scrollY) => {
                 return Math.abs(scrollY - this._scrollY) >= this._infiniteList.rowHeight;
-            })
+            }))
             .subscribe(
                 (scrollY) => {
                     this._scrollY = scrollY;

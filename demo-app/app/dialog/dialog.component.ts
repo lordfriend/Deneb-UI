@@ -1,7 +1,7 @@
 import { Component, OnDestroy, ViewChild, ViewContainerRef } from '@angular/core';
-import {UIDialog} from '../../../src';
-import {ExampleDialog} from './example-dialog/example-dialog';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
+import { UIDialog } from '../../../src';
+import { ExampleDialog } from './example-dialog/example-dialog';
 
 require('semantic-ui-less/definitions/modules/dimmer.less');
 require('semantic-ui-less/definitions/modules/modal.less');

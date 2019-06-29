@@ -1,6 +1,9 @@
+
+import {fromEvent as observableFromEvent, Observable, Subscription} from 'rxjs';
+
+import {map} from 'rxjs/operators';
 import {AfterViewInit, Component, DoCheck, ElementRef, OnDestroy, ViewChild} from '@angular/core';
 import {UITimeLineMeter} from './timeline-meter';
-import {Observable, Subscription} from 'rxjs';
 
 @Component({
     selector: 'ui-scrollable-content',
@@ -23,10 +26,10 @@ export class UIScrollableContent implements AfterViewInit, OnDestroy, DoCheck {
 
     ngAfterViewInit(): void {
         let content = this.scrollableContent.nativeElement;
-        this._subcription.add(Observable.fromEvent(content, 'scroll')
-            .map(() => {
+        this._subcription.add(observableFromEvent(content, 'scroll').pipe(
+            map(() => {
                 return this.scrollableContent.nativeElement.scrollTop;
-            })
+            }))
             .subscribe(
                 (scrollY: number) => {
                     let rect = content.getBoundingClientRect();
@@ -34,11 +37,11 @@ export class UIScrollableContent implements AfterViewInit, OnDestroy, DoCheck {
                 }
             ));
         this._subcription.add(
-            this._timelineMeter.scrollPosition
-                .map((scrollPercentage: number) => {
+            this._timelineMeter.scrollPosition.pipe(
+                map((scrollPercentage: number) => {
                     let rect = content.getBoundingClientRect();
                     return scrollPercentage * (content.scrollHeight - rect.height);
-                })
+                }))
                 .subscribe(
                     (scrollY: number) => {
                         content.scrollTop = scrollY;

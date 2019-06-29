@@ -14,7 +14,7 @@ npm test
 
 # build release
 echo 'build release'
-$(npm bin)/gulp build
+$(npm bin)/gulp
 
 # cp files
 echo 'copy files'

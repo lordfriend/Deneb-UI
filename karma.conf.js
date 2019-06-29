@@ -3,10 +3,12 @@
 
 module.exports = function (config) {
     let browsers = ['Chrome', 'PhantomJS'];
+    let reporter = 'kjhtml';
     if (process.env.TRAVIS) {
         browsers = [
             'PhantomJS'
         ];
+        reporter = 'progress';
     }
     config.set({
 
@@ -32,16 +34,21 @@ module.exports = function (config) {
         // preprocess matching files before serving them to the browser
         // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
         preprocessors: {
-            'test-entry.js': ['webpack']
+            'test-entry.js': ['webpack', 'sourcemap']
         },
 
         webpack: require('./webpack.test'),
-
+        webpackMiddleware: {
+            logLevel: 'warn',
+            stats: {
+                chunks: false
+            }
+        },
 
         // test results reporter to use
         // possible values: 'dots', 'progress'
         // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-        reporters: ['progress'],
+        reporters: [reporter],
 
 
         // web server port
@@ -71,6 +78,20 @@ module.exports = function (config) {
 
         // Concurrency level
         // how many browser should be started simultaneous
-        concurrency: Infinity
+        concurrency: Infinity,
+
+        plugins: [
+            require('karma-jasmine'),
+            require('karma-chrome-launcher'),
+            require('karma-firefox-launcher'),
+            require('karma-phantomjs-launcher'),
+            require('karma-webpack'),
+            require('karma-sourcemap-loader'),
+            require('ts-loader'),
+            require('karma-jasmine-html-reporter')
+        ],
+        client: {
+            clearContext: false
+        }
     })
 };

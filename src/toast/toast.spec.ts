@@ -1,13 +1,11 @@
-import {async, TestBed, inject} from '@angular/core/testing';
-import {
-    NgModule, Component, Input, AnimationTransitionEvent, EventEmitter, style, transition,
-    animate, state, trigger, ApplicationRef
-} from '@angular/core';
-import {UIToastModule} from './index';
-import {UIToastAnimation} from './toast-interface';
-import {UIToast} from './toast';
-import {UIToastRef} from './toast-ref';
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import { animate, AnimationEvent, state, style, transition, trigger } from '@angular/animations';
+import { ApplicationRef, Component, EventEmitter, Input, NgModule } from '@angular/core';
+import { async, inject, TestBed } from '@angular/core/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { UIToastModule } from './index';
+import { UIToast } from './toast';
+import { UIToastAnimation } from './toast-interface';
+import { UIToastRef } from './toast-ref';
 
 describe('UIToast', () => {
     let toast: UIToast;
@@ -15,7 +13,7 @@ describe('UIToast', () => {
     let toastRef: UIToastRef<any>;
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            imports: [BrowserAnimationsModule, UIToastModule, ToastTestModule]
+            imports: [NoopAnimationsModule, UIToastModule, ToastTestModule]
         });
 
         TestBed.compileComponents();
@@ -95,7 +93,7 @@ describe('UIToast', () => {
 class TestToastComponent implements UIToastAnimation {
     @Input() message: string;
     animationEvent: EventEmitter<any> = new EventEmitter<any>();
-    uiLeaveAnimationDone(event: AnimationTransitionEvent) {
+    uiLeaveAnimationDone(event: AnimationEvent) {
         if (event.toState === 'void') {
             this.animationEvent.emit(null);
         }

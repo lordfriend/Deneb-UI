@@ -1,15 +1,16 @@
-import {TestBed, async, inject} from '@angular/core/testing';
-import {UIDialog} from './dialog';
-import {Component, NgModule} from '@angular/core';
-import {UIDialogRef} from './dialog-ref';
-import {UIDialogModule} from './index';
+import { Component, NgModule } from '@angular/core';
+import { async, inject, TestBed } from '@angular/core/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { UIDialog } from './dialog';
+import { UIDialogRef } from './dialog-ref';
+import { UIDialogModule } from './index';
 
 describe('UIDialog', () => {
     let dialog: UIDialog;
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            imports: [DialogTestModule, UIDialogModule]
+            imports: [DialogTestModule, UIDialogModule, NoopAnimationsModule]
         });
 
         TestBed.compileComponents();

@@ -1,8 +1,11 @@
+
+import {fromEvent as observableFromEvent, Observable, Subscription} from 'rxjs';
+
+import {takeUntil, mergeMap, tap, filter, debounceTime} from 'rxjs/operators';
 import {
     AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges,
     ViewChild
 } from '@angular/core';
-import {Observable, Subscription} from 'rxjs';
 import {isInRect} from '../core/helpers';
 
 export const SCROLL_DISTANCE = 10;
@@ -62,8 +65,8 @@ export class UIScrollbar implements AfterViewInit, OnChanges, OnDestroy {
         });
 
         this._subscription.add(
-            Observable.fromEvent(window, 'resize')
-                .debounceTime(300)
+            observableFromEvent(window, 'resize').pipe(
+                debounceTime(300))
                 .subscribe(
                     () => {
                         this.scrollbarRect = scrollbar.getBoundingClientRect();
@@ -75,11 +78,11 @@ export class UIScrollbar implements AfterViewInit, OnChanges, OnDestroy {
         );
 
         this._subscription.add(
-            Observable.fromEvent(document.body, 'mousedown')
-                .filter((event: MouseEvent) => {
+            observableFromEvent(document.body, 'mousedown').pipe(
+                filter((event: MouseEvent) => {
                     return isInRect(event.clientX, event.clientY, this.scrollbarRect);
-                })
-                .do((event: MouseEvent) => {
+                }),
+                tap((event: MouseEvent) => {
                     this._isDraging = true;
                     event.preventDefault();
                     let scrollbarThumbOffset = this.scrollbarThumbTop + this.scrollbarRect.top;
@@ -92,18 +95,18 @@ export class UIScrollbar implements AfterViewInit, OnChanges, OnDestroy {
                     } else {
                         this._dragStartOffset = event.clientY - scrollbarThumbOffset;
                     }
-                })
-                .flatMap(() => {
-                    return Observable.fromEvent(document.body, 'mousemove')
-                        .takeUntil(
-                            Observable.fromEvent(document.body, 'mouseup')
-                                .do(() => {
+                }),
+                mergeMap(() => {
+                    return observableFromEvent(document.body, 'mousemove').pipe(
+                        takeUntil(
+                            observableFromEvent(document.body, 'mouseup').pipe(
+                                tap(() => {
                                     this._isDraging = false;
                                     this._dragStartOffset = 0;
                                     clearTimeout(this._timer);
-                                })
-                        );
-                })
+                                }))
+                        ));
+                }),)
                 .subscribe(
                     (event: MouseEvent) => {
                         if (this._isDrag) {

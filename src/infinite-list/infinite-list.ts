@@ -1,5 +1,8 @@
+
+import {fromEvent as observableFromEvent,  BehaviorSubject, Observable, Subscription } from 'rxjs';
+
+import {debounceTime, tap, skip, map, filter} from 'rxjs/operators';
 import { AfterViewInit, Component, ElementRef, Input, OnDestroy, Optional, Output, ViewChild } from '@angular/core';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { UITimeLineMeter } from '../timeline-meter/timeline-meter';
 
 export const SCROLL_STOP_TIME_THRESHOLD = 200; // in milliseconds
@@ -115,41 +118,41 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
         }
 
         if (window) {
-            this._subscription.add(Observable.fromEvent(window, 'resize')
+            this._subscription.add(observableFromEvent(window, 'resize')
                 .subscribe(() => {
                     this.requestMeasure();
                 }));
         }
-        this._subscription.add(Observable.fromEvent(this.listContainer.nativeElement, 'scroll')
-            .filter(() => {
+        this._subscription.add(observableFromEvent(this.listContainer.nativeElement, 'scroll').pipe(
+            filter(() => {
                 if (this.ignoreScrollEvent) {
                     this.ignoreScrollEvent = false;
                     return false;
                 }
                 return true;
-            })
-            .map(() => {
+            }),
+            map(() => {
                 return this.listContainer.nativeElement.scrollTop;
-            })
+            }),)
             .subscribe((scrollY: number) => {
                 this._scrollPosition.next(scrollY);
             }));
-        this._subscription.add(this.scrollPosition
-            .skip(1)
+        this._subscription.add(this.scrollPosition.pipe(
+            skip(1))
             .subscribe((scrollY) => {
                 if (this._timelineMeter) {
                     this._timelineMeter.setScrollY(scrollY / (this.holderHeight - this._containerHeight));
                 }
             })
         );
-        this._subscription.add(this.scrollPosition
-            .do(() => {
+        this._subscription.add(this.scrollPosition.pipe(
+            tap(() => {
                 if (this.currentScrollState === SCROLL_STATE.IDLE) {
                     this.currentScrollState = SCROLL_STATE.SCROLLING;
                     this._scrollStateChange.next(this.currentScrollState);
                 }
-            })
-            .debounceTime(SCROLL_STOP_TIME_THRESHOLD)
+            }),
+            debounceTime(SCROLL_STOP_TIME_THRESHOLD),)
             .subscribe(
                 () => {
                     if (this.currentScrollState === SCROLL_STATE.SCROLLING) {
@@ -160,15 +163,15 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
             ));
 
         if (this._timelineMeter) {
-            this._subscription.add(this._timelineMeter.scrollPosition
-                .skip(1)
-                .map((scrollPercentage: number) => {
+            this._subscription.add(this._timelineMeter.scrollPosition.pipe(
+                skip(1),
+                map((scrollPercentage: number) => {
                     return scrollPercentage * (this.holderHeight - this._containerHeight);
-                })
-                .filter((scrollY: number) => {
+                }),
+                filter((scrollY: number) => {
                     return scrollY >= 0 && scrollY <= (this.holderHeight - this._containerHeight);
-                })
-                .do(
+                }),
+                tap(
                     (scrollY: number) => {
                         this.ignoreScrollEvent = true;
                         this.listContainer.nativeElement.scrollTop = scrollY;
@@ -178,8 +181,8 @@ export class InfiniteList implements AfterViewInit, OnDestroy {
                             this._scrollStateChange.next(this.currentScrollState);
                         }
                     }
-                )
-                .debounceTime(SCROLL_STOP_TIME_THRESHOLD)
+                ),
+                debounceTime(SCROLL_STOP_TIME_THRESHOLD),)
                 .subscribe(
                     () => {
                         if (this.currentScrollState === SCROLL_STATE.SCROLLING) {
